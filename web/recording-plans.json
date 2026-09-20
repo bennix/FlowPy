@@ -1,0 +1,5785 @@
+[
+  {
+    "slug": "001_starter",
+    "name": "订单解析工作流",
+    "graph": {
+      "name": "订单解析工作流",
+      "description": "文本 → 正则抽取 → 条件路由 → 处理订单 / 默认分支",
+      "nodes": [
+        {
+          "id": "text1",
+          "type": "LoadText",
+          "x": 30,
+          "y": 70,
+          "title": "文本输入",
+          "config": {
+            "text": "Order received: ORD-123456\nCustomer: Alice\nStatus: paid"
+          }
+        },
+        {
+          "id": "pattern1",
+          "type": "Constant",
+          "x": 30,
+          "y": 370,
+          "title": "订单号匹配规则",
+          "config": {
+            "value": "ORD-(?P<id>\\d{6})"
+          }
+        },
+        {
+          "id": "match1",
+          "type": "RegexMatch",
+          "x": 360,
+          "y": 130,
+          "title": "匹配与抽取",
+          "config": {
+            "pattern": "ORD-(?P<id>\\d{6})",
+            "text": "",
+            "flags": []
+          }
+        },
+        {
+          "id": "if1",
+          "type": "If",
+          "x": 690,
+          "y": 150,
+          "title": "订单是否有效？",
+          "config": {
+            "condition": false
+          }
+        },
+        {
+          "id": "python1",
+          "type": "Python",
+          "x": 1020,
+          "y": 70,
+          "title": "处理订单",
+          "config": {
+            "code": "order_id = value[\"id\"]\nresult = {\"order_id\": order_id, \"status\": \"processed\"}\nprint(f\"订单 {order_id} 处理完成\")"
+          }
+        },
+        {
+          "id": "fallback1",
+          "type": "Output",
+          "x": 1020,
+          "y": 380,
+          "title": "默认分支",
+          "config": {
+            "value": "未发现有效订单号"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "text1",
+          "out": "text",
+          "target": "match1",
+          "in": "text"
+        },
+        {
+          "source": "pattern1",
+          "out": "value",
+          "target": "match1",
+          "in": "pattern"
+        },
+        {
+          "source": "match1",
+          "out": "ok",
+          "target": "if1",
+          "in": "condition"
+        },
+        {
+          "source": "match1",
+          "out": "groups",
+          "target": "if1",
+          "in": "value"
+        },
+        {
+          "source": "if1",
+          "out": "true",
+          "target": "python1",
+          "in": "gate"
+        },
+        {
+          "source": "if1",
+          "out": "value",
+          "target": "python1",
+          "in": "value"
+        },
+        {
+          "source": "if1",
+          "out": "false",
+          "target": "fallback1",
+          "in": "gate"
+        }
+      ]
+    },
+    "expected": {
+      "text1": {
+        "text": "Order received: ORD-123456\nCustomer: Alice\nStatus: paid"
+      },
+      "pattern1": {
+        "value": "ORD-(?P<id>\\d{6})"
+      },
+      "match1": {
+        "ok": true,
+        "groups": {
+          "id": "123456"
+        },
+        "matches": [
+          "ORD-123456"
+        ],
+        "span": [
+          16,
+          26
+        ]
+      },
+      "if1": {
+        "true": true,
+        "false": false,
+        "value": {
+          "id": "123456"
+        }
+      },
+      "python1": {
+        "value": {
+          "order_id": "123456",
+          "status": "processed"
+        }
+      },
+      "fallback1": null
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示订单解析工作流。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "text1",
+          "type": "LoadText",
+          "x": 30,
+          "y": 70,
+          "title": "文本输入",
+          "config": {
+            "text": "Order received: ORD-123456\nCustomer: Alice\nStatus: paid"
+          }
+        },
+        "text": "添加 LoadText 节点。在右侧输入要处理的原始文本，后续节点通过连线取得字符串。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "pattern1",
+          "type": "Constant",
+          "x": 30,
+          "y": 370,
+          "title": "订单号匹配规则",
+          "config": {
+            "value": "ORD-(?P<id>\\d{6})"
+          }
+        },
+        "text": "添加 Constant 节点。在右侧填入本例的数据。常量可以是数字、字符串、列表或字典，使用合法的 JSON 格式。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "match1",
+          "type": "RegexMatch",
+          "x": 360,
+          "y": 130,
+          "title": "匹配与抽取",
+          "config": {
+            "pattern": "ORD-(?P<id>\\d{6})",
+            "text": "",
+            "flags": []
+          }
+        },
+        "text": "添加 RegexMatch 节点。输入正则表达式。匹配节点输出布尔值和分组字典，不负责跳转。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "text1",
+          "out": "text",
+          "target": "match1",
+          "in": "text"
+        },
+        "text": "点击 LoadText 的 text 输出，再点击 RegexMatch 的 text 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "pattern1",
+          "out": "value",
+          "target": "match1",
+          "in": "pattern"
+        },
+        "text": "点击 Constant 的 value 输出，再点击 RegexMatch 的 pattern 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "if1",
+          "type": "If",
+          "x": 690,
+          "y": 150,
+          "title": "订单是否有效？",
+          "config": {
+            "condition": false
+          }
+        },
+        "text": "添加 If 节点。分支节点只检查布尔值。true 和 false 出口连接到后续节点的 gate。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "match1",
+          "out": "ok",
+          "target": "if1",
+          "in": "condition"
+        },
+        "text": "点击 RegexMatch 的 ok 输出，再点击 If 的 condition 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "match1",
+          "out": "groups",
+          "target": "if1",
+          "in": "value"
+        },
+        "text": "点击 RegexMatch 的 groups 输出，再点击 If 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "python1",
+          "type": "Python",
+          "x": 1020,
+          "y": 70,
+          "title": "处理订单",
+          "config": {
+            "code": "order_id = value[\"id\"]\nresult = {\"order_id\": order_id, \"status\": \"processed\"}\nprint(f\"订单 {order_id} 处理完成\")"
+          }
+        },
+        "text": "添加 Python 节点。把处理逻辑写在这个节点里，输入由连线传入，结果写入 result。这样主画布保持简洁。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "if1",
+          "out": "true",
+          "target": "python1",
+          "in": "gate"
+        },
+        "text": "点击 If 的 true 输出，再点击 Python 的 gate 输入，建立这条控制连线。只有条件为真，下游才会执行。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "if1",
+          "out": "value",
+          "target": "python1",
+          "in": "value"
+        },
+        "text": "点击 If 的 value 输出，再点击 Python 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "fallback1",
+          "type": "Output",
+          "x": 1020,
+          "y": 380,
+          "title": "默认分支",
+          "config": {
+            "value": "未发现有效订单号"
+          }
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "if1",
+          "out": "false",
+          "target": "fallback1",
+          "in": "gate"
+        },
+        "text": "点击 If 的 false 输出，再点击 Output 的 gate 输入，建立这条控制连线。只有条件为真，下游才会执行。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "002_starter",
+    "name": "批量抽取与匿名函数",
+    "graph": {
+      "name": "批量抽取与匿名函数",
+      "description": "RegexFindall → Map，Lambda 回调批量转换订单号",
+      "nodes": [
+        {
+          "id": "text1",
+          "type": "LoadText",
+          "x": 30,
+          "y": 50,
+          "title": "文本输入",
+          "config": {
+            "text": "ORD-123456, ORD-234567, ORD-345678"
+          }
+        },
+        {
+          "id": "find1",
+          "type": "RegexFindall",
+          "x": 350,
+          "y": 50,
+          "title": "查找全部匹配",
+          "config": {
+            "pattern": "ORD-\\d{6}",
+            "text": "",
+            "flags": []
+          }
+        },
+        {
+          "id": "lambda1",
+          "type": "Lambda",
+          "x": 350,
+          "y": 350,
+          "title": "匿名函数",
+          "config": {
+            "params": "order",
+            "expression": "{\"id\": order[4:], \"valid\": True}"
+          }
+        },
+        {
+          "id": "map1",
+          "type": "Map",
+          "x": 690,
+          "y": 100,
+          "title": "逐项映射",
+          "config": {
+            "code": "result = item",
+            "limit": 1000
+          }
+        },
+        {
+          "id": "out1",
+          "type": "Output",
+          "x": 1020,
+          "y": 100,
+          "title": "结果输出",
+          "config": {
+            "value": "未发现有效订单号"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "text1",
+          "out": "text",
+          "target": "find1",
+          "in": "text"
+        },
+        {
+          "source": "find1",
+          "out": "matches",
+          "target": "map1",
+          "in": "items"
+        },
+        {
+          "source": "lambda1",
+          "out": "function",
+          "target": "map1",
+          "in": "function"
+        },
+        {
+          "source": "map1",
+          "out": "items",
+          "target": "out1",
+          "in": "value"
+        }
+      ]
+    },
+    "expected": {
+      "text1": {
+        "text": "ORD-123456, ORD-234567, ORD-345678"
+      },
+      "find1": {
+        "matches": [
+          "ORD-123456",
+          "ORD-234567",
+          "ORD-345678"
+        ],
+        "ok": true
+      },
+      "map1": {
+        "items": [
+          {
+            "id": "123456",
+            "valid": true
+          },
+          {
+            "id": "234567",
+            "valid": true
+          },
+          {
+            "id": "345678",
+            "valid": true
+          }
+        ],
+        "count": 3
+      },
+      "out1": {
+        "value": [
+          {
+            "id": "123456",
+            "valid": true
+          },
+          {
+            "id": "234567",
+            "valid": true
+          },
+          {
+            "id": "345678",
+            "valid": true
+          }
+        ]
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示批量抽取与匿名函数。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "text1",
+          "type": "LoadText",
+          "x": 30,
+          "y": 50,
+          "title": "文本输入",
+          "config": {
+            "text": "ORD-123456, ORD-234567, ORD-345678"
+          }
+        },
+        "text": "添加 LoadText 节点。在右侧输入要处理的原始文本，后续节点通过连线取得字符串。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "find1",
+          "type": "RegexFindall",
+          "x": 350,
+          "y": 50,
+          "title": "查找全部匹配",
+          "config": {
+            "pattern": "ORD-\\d{6}",
+            "text": "",
+            "flags": []
+          }
+        },
+        "text": "添加 RegexFindall 节点。输入正则表达式，一次提取所有匹配，输出列表。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "text1",
+          "out": "text",
+          "target": "find1",
+          "in": "text"
+        },
+        "text": "点击 LoadText 的 text 输出，再点击 RegexFindall 的 text 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "lambda1",
+          "type": "Lambda",
+          "x": 350,
+          "y": 350,
+          "title": "匿名函数",
+          "config": {
+            "params": "order",
+            "expression": "{\"id\": order[4:], \"valid\": True}"
+          }
+        },
+        "text": "添加 Lambda 节点。填写参数和返回表达式，匿名函数也可以沿着连线传递。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "map1",
+          "type": "Map",
+          "x": 690,
+          "y": 100,
+          "title": "逐项映射",
+          "config": {
+            "code": "result = item",
+            "limit": 1000
+          }
+        },
+        "text": "添加 Map 节点。这个节点逐项处理列表。具体逻辑可以来自函数回调，也可以放在内部子图。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "find1",
+          "out": "matches",
+          "target": "map1",
+          "in": "items"
+        },
+        "text": "点击 RegexFindall 的 matches 输出，再点击 Map 的 items 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "lambda1",
+          "out": "function",
+          "target": "map1",
+          "in": "function"
+        },
+        "text": "点击 Lambda 的 function 输出，再点击 Map 的 function 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out1",
+          "type": "Output",
+          "x": 1020,
+          "y": 100,
+          "title": "结果输出",
+          "config": {
+            "value": "未发现有效订单号"
+          }
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "map1",
+          "out": "items",
+          "target": "out1",
+          "in": "value"
+        },
+        "text": "点击 Map 的 items 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "003_starter",
+    "name": "函数定义与灵活调用",
+    "graph": {
+      "name": "函数定义与灵活调用",
+      "description": "默认参数、*args、关键字限定参数、**kwargs 与 Call",
+      "nodes": [
+        {
+          "id": "fn1",
+          "type": "Function",
+          "x": 30,
+          "y": 80,
+          "title": "函数定义",
+          "config": {
+            "name": "format_order",
+            "code": "def format_order(order_id, /, *tags, prefix=\"ORD\", **meta):\n    return {\"order\": f\"{prefix}-{order_id}\",\n            \"tags\": list(tags), \"meta\": meta}"
+          }
+        },
+        {
+          "id": "args1",
+          "type": "Constant",
+          "x": 30,
+          "y": 380,
+          "title": "常量 / Pattern",
+          "config": {
+            "value": [
+              "123456",
+              "paid",
+              "priority"
+            ]
+          }
+        },
+        {
+          "id": "call1",
+          "type": "Call",
+          "x": 380,
+          "y": 120,
+          "title": "调用函数",
+          "config": {
+            "args": [],
+            "kwargs": {
+              "prefix": "ORDER",
+              "customer": "Alice"
+            }
+          }
+        },
+        {
+          "id": "out1",
+          "type": "Output",
+          "x": 730,
+          "y": 120,
+          "title": "结果输出",
+          "config": {
+            "value": "未发现有效订单号"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "fn1",
+          "out": "function",
+          "target": "call1",
+          "in": "function"
+        },
+        {
+          "source": "args1",
+          "out": "value",
+          "target": "call1",
+          "in": "args"
+        },
+        {
+          "source": "call1",
+          "out": "value",
+          "target": "out1",
+          "in": "value"
+        }
+      ]
+    },
+    "expected": {
+      "args1": {
+        "value": [
+          "123456",
+          "paid",
+          "priority"
+        ]
+      },
+      "call1": {
+        "value": {
+          "order": "ORDER-123456",
+          "tags": [
+            "paid",
+            "priority"
+          ],
+          "meta": {
+            "customer": "Alice"
+          }
+        }
+      },
+      "out1": {
+        "value": {
+          "order": "ORDER-123456",
+          "tags": [
+            "paid",
+            "priority"
+          ],
+          "meta": {
+            "customer": "Alice"
+          }
+        }
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示函数定义与灵活调用。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "fn1",
+          "type": "Function",
+          "x": 30,
+          "y": 80,
+          "title": "函数定义",
+          "config": {
+            "name": "format_order",
+            "code": "def format_order(order_id, /, *tags, prefix=\"ORD\", **meta):\n    return {\"order\": f\"{prefix}-{order_id}\",\n            \"tags\": list(tags), \"meta\": meta}"
+          }
+        },
+        "text": "添加 Function 节点。填写函数源码和输出函数名。这里保留 Python 原生参数规则，定义函数和调用函数分开。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "args1",
+          "type": "Constant",
+          "x": 30,
+          "y": 380,
+          "title": "常量 / Pattern",
+          "config": {
+            "value": [
+              "123456",
+              "paid",
+              "priority"
+            ]
+          }
+        },
+        "text": "添加 Constant 节点。在右侧填入本例的数据。常量可以是数字、字符串、列表或字典，使用合法的 JSON 格式。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "call1",
+          "type": "Call",
+          "x": 380,
+          "y": 120,
+          "title": "调用函数",
+          "config": {
+            "args": [],
+            "kwargs": {
+              "prefix": "ORDER",
+              "customer": "Alice"
+            }
+          }
+        },
+        "text": "添加 Call 节点。填写位置参数和关键字参数。调用节点负责把参数传给上游函数。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "fn1",
+          "out": "function",
+          "target": "call1",
+          "in": "function"
+        },
+        "text": "点击 Function 的 function 输出，再点击 Call 的 function 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "args1",
+          "out": "value",
+          "target": "call1",
+          "in": "args"
+        },
+        "text": "点击 Constant 的 value 输出，再点击 Call 的 args 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out1",
+          "type": "Output",
+          "x": 730,
+          "y": 120,
+          "title": "结果输出",
+          "config": {
+            "value": "未发现有效订单号"
+          }
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "call1",
+          "out": "value",
+          "target": "out1",
+          "in": "value"
+        },
+        "text": "点击 Call 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "004_starter",
+    "name": "正则谓词过滤",
+    "graph": {
+      "name": "正则谓词过滤",
+      "description": "正则判断封装成谓词函数，Filter 仅负责按布尔结果筛选",
+      "nodes": [
+        {
+          "id": "list1",
+          "type": "Constant",
+          "x": 30,
+          "y": 60,
+          "title": "常量 / Pattern",
+          "config": {
+            "value": [
+              "ORD-123456",
+              "invalid",
+              "ORD-234567",
+              "END"
+            ]
+          }
+        },
+        {
+          "id": "predicate1",
+          "type": "Lambda",
+          "x": 30,
+          "y": 340,
+          "title": "匿名函数",
+          "config": {
+            "params": "item",
+            "expression": "re.search(r\"^ORD-\\d{6}$\", item) is not None"
+          }
+        },
+        {
+          "id": "filter1",
+          "type": "Filter",
+          "x": 400,
+          "y": 100,
+          "title": "条件过滤",
+          "config": {
+            "code": "result = bool(item)",
+            "limit": 1000
+          }
+        },
+        {
+          "id": "out1",
+          "type": "Output",
+          "x": 740,
+          "y": 100,
+          "title": "结果输出",
+          "config": {
+            "value": "未发现有效订单号"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "list1",
+          "out": "value",
+          "target": "filter1",
+          "in": "items"
+        },
+        {
+          "source": "predicate1",
+          "out": "function",
+          "target": "filter1",
+          "in": "function"
+        },
+        {
+          "source": "filter1",
+          "out": "items",
+          "target": "out1",
+          "in": "value"
+        }
+      ]
+    },
+    "expected": {
+      "list1": {
+        "value": [
+          "ORD-123456",
+          "invalid",
+          "ORD-234567",
+          "END"
+        ]
+      },
+      "filter1": {
+        "items": [
+          "ORD-123456",
+          "ORD-234567"
+        ],
+        "count": 2
+      },
+      "out1": {
+        "value": [
+          "ORD-123456",
+          "ORD-234567"
+        ]
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示正则谓词过滤。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "list1",
+          "type": "Constant",
+          "x": 30,
+          "y": 60,
+          "title": "常量 / Pattern",
+          "config": {
+            "value": [
+              "ORD-123456",
+              "invalid",
+              "ORD-234567",
+              "END"
+            ]
+          }
+        },
+        "text": "添加 Constant 节点。在右侧填入本例的数据。常量可以是数字、字符串、列表或字典，使用合法的 JSON 格式。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "predicate1",
+          "type": "Lambda",
+          "x": 30,
+          "y": 340,
+          "title": "匿名函数",
+          "config": {
+            "params": "item",
+            "expression": "re.search(r\"^ORD-\\d{6}$\", item) is not None"
+          }
+        },
+        "text": "添加 Lambda 节点。填写参数和返回表达式，匿名函数也可以沿着连线传递。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "filter1",
+          "type": "Filter",
+          "x": 400,
+          "y": 100,
+          "title": "条件过滤",
+          "config": {
+            "code": "result = bool(item)",
+            "limit": 1000
+          }
+        },
+        "text": "添加 Filter 节点。这个节点只负责筛选。谓词返回真时保留当前项，返回假时丢弃。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "list1",
+          "out": "value",
+          "target": "filter1",
+          "in": "items"
+        },
+        "text": "点击 Constant 的 value 输出，再点击 Filter 的 items 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "predicate1",
+          "out": "function",
+          "target": "filter1",
+          "in": "function"
+        },
+        "text": "点击 Lambda 的 function 输出，再点击 Filter 的 function 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out1",
+          "type": "Output",
+          "x": 740,
+          "y": 100,
+          "title": "结果输出",
+          "config": {
+            "value": "未发现有效订单号"
+          }
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "filter1",
+          "out": "items",
+          "target": "out1",
+          "in": "value"
+        },
+        "text": "点击 Filter 的 items 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "w02_bmi",
+    "name": "BMI 计算器",
+    "graph": {
+      "version": 1,
+      "name": "BMI 计算器",
+      "week": 2,
+      "description": "变量、数值运算、字典输入与边界校验；体重 kg / 身高 m。",
+      "stdin": "",
+      "nodes": [
+        {
+          "id": "input",
+          "type": "Constant",
+          "title": "输入数据",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": {
+              "weight": 70,
+              "height": 1.75
+            }
+          }
+        },
+        {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python 处理",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "weight, height = float(value['weight']), float(value['height'])\nif weight <= 0 or height <= 0:\n    raise ValueError('体重和身高必须大于 0')\nbmi = weight / height ** 2\ncategory = '偏瘦' if bmi < 18.5 else '正常' if bmi < 24 else '超重' if bmi < 28 else '肥胖'\nresult = {'bmi': round(bmi, 2), 'category': category}"
+          }
+        },
+        {
+          "id": "out",
+          "type": "Output",
+          "title": "结果",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        }
+      ],
+      "edges": [
+        {
+          "source": "input",
+          "out": "value",
+          "target": "logic",
+          "in": "value"
+        },
+        {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        }
+      ],
+      "checks": {
+        "out": {
+          "value": {
+            "bmi": 22.86,
+            "category": "正常"
+          }
+        }
+      },
+      "verified": true
+    },
+    "expected": {
+      "input": {
+        "value": {
+          "weight": 70,
+          "height": 1.75
+        }
+      },
+      "logic": {
+        "value": {
+          "bmi": 22.86,
+          "category": "正常"
+        }
+      },
+      "out": {
+        "value": {
+          "bmi": 22.86,
+          "category": "正常"
+        }
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示BMI 计算器。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "input",
+          "type": "Constant",
+          "title": "输入数据",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": {
+              "weight": 70,
+              "height": 1.75
+            }
+          }
+        },
+        "text": "添加 Constant 节点。在右侧填入本例的数据。常量可以是数字、字符串、列表或字典，使用合法的 JSON 格式。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python 处理",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "weight, height = float(value['weight']), float(value['height'])\nif weight <= 0 or height <= 0:\n    raise ValueError('体重和身高必须大于 0')\nbmi = weight / height ** 2\ncategory = '偏瘦' if bmi < 18.5 else '正常' if bmi < 24 else '超重' if bmi < 28 else '肥胖'\nresult = {'bmi': round(bmi, 2), 'category': category}"
+          }
+        },
+        "text": "添加 Python 节点。把处理逻辑写在这个节点里，输入由连线传入，结果写入 result。这样主画布保持简洁。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "input",
+          "out": "value",
+          "target": "logic",
+          "in": "value"
+        },
+        "text": "点击 Constant 的 value 输出，再点击 Python 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "结果",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Python 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "w02_interactive",
+    "name": "交互式 BMI / input()",
+    "graph": {
+      "version": 1,
+      "name": "交互式 BMI / input()",
+      "week": 2,
+      "description": "使用逐行标准输入重现交互；导出后可在终端实际输入。",
+      "stdin": "70\n1.75\n",
+      "nodes": [
+        {
+          "id": "interactive",
+          "type": "Python",
+          "title": "输入与表达式",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "code": "weight = float(input('体重(kg)：'))\nheight = float(input('身高(m)：'))\nif weight <= 0 or height <= 0:\n    raise ValueError('体重和身高必须为正数')\nresult = round(weight / height ** 2, 2)\nprint(f'BMI = {result}')"
+          }
+        },
+        {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 380,
+          "y": 80,
+          "config": {}
+        }
+      ],
+      "edges": [
+        {
+          "source": "interactive",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        }
+      ],
+      "checks": {
+        "out": {
+          "value": 22.86
+        }
+      },
+      "verified": true
+    },
+    "expected": {
+      "interactive": {
+        "value": 22.86
+      },
+      "out": {
+        "value": 22.86
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示交互式 BMI / input()。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "interactive",
+          "type": "Python",
+          "title": "输入与表达式",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "code": "weight = float(input('体重(kg)：'))\nheight = float(input('身高(m)：'))\nif weight <= 0 or height <= 0:\n    raise ValueError('体重和身高必须为正数')\nresult = round(weight / height ** 2, 2)\nprint(f'BMI = {result}')"
+          }
+        },
+        "text": "添加 Python 节点。把处理逻辑写在这个节点里，输入由连线传入，结果写入 result。这样主画布保持简洁。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 380,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "interactive",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Python 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "stdin",
+        "value": "70\n1.75\n",
+        "text": "点击输入，逐行填写交互测试数据。程序每调用一次 input，就读取一行，便于重复验证同一个过程。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "w02_types_operators",
+    "name": "基础类型与运算符",
+    "graph": {
+      "version": 1,
+      "name": "基础类型与运算符",
+      "week": 2,
+      "description": "int / float / str / bool、算术、比较与逻辑运算。",
+      "stdin": "",
+      "nodes": [
+        {
+          "id": "input",
+          "type": "Constant",
+          "title": "输入数据",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": {
+              "a": 17,
+              "b": 5
+            }
+          }
+        },
+        {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python 处理",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "a, b = value['a'], value['b']\nresult = {'sum': a+b, 'quotient': a//b, 'remainder': a%b,\n          'power': b**2, 'comparison': a>b and b>0,\n          'text': f'{a}/{b}', 'conversion': int('42')}"
+          }
+        },
+        {
+          "id": "out",
+          "type": "Output",
+          "title": "结果",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        }
+      ],
+      "edges": [
+        {
+          "source": "input",
+          "out": "value",
+          "target": "logic",
+          "in": "value"
+        },
+        {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        }
+      ],
+      "checks": {
+        "out": {
+          "value": {
+            "sum": 22,
+            "quotient": 3,
+            "remainder": 2,
+            "power": 25,
+            "comparison": true,
+            "text": "17/5",
+            "conversion": 42
+          }
+        }
+      },
+      "verified": true
+    },
+    "expected": {
+      "input": {
+        "value": {
+          "a": 17,
+          "b": 5
+        }
+      },
+      "logic": {
+        "value": {
+          "sum": 22,
+          "quotient": 3,
+          "remainder": 2,
+          "power": 25,
+          "comparison": true,
+          "text": "17/5",
+          "conversion": 42
+        }
+      },
+      "out": {
+        "value": {
+          "sum": 22,
+          "quotient": 3,
+          "remainder": 2,
+          "power": 25,
+          "comparison": true,
+          "text": "17/5",
+          "conversion": 42
+        }
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示基础类型与运算符。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "input",
+          "type": "Constant",
+          "title": "输入数据",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": {
+              "a": 17,
+              "b": 5
+            }
+          }
+        },
+        "text": "添加 Constant 节点。在右侧填入本例的数据。常量可以是数字、字符串、列表或字典，使用合法的 JSON 格式。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python 处理",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "a, b = value['a'], value['b']\nresult = {'sum': a+b, 'quotient': a//b, 'remainder': a%b,\n          'power': b**2, 'comparison': a>b and b>0,\n          'text': f'{a}/{b}', 'conversion': int('42')}"
+          }
+        },
+        "text": "添加 Python 节点。把处理逻辑写在这个节点里，输入由连线传入，结果写入 result。这样主画布保持简洁。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "input",
+          "out": "value",
+          "target": "logic",
+          "in": "value"
+        },
+        "text": "点击 Constant 的 value 输出，再点击 Python 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "结果",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Python 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "w03_ai_debug_log",
+    "name": "AI 调试日志：三次失败与修正",
+    "graph": {
+      "version": 1,
+      "name": "AI 调试日志：三次失败与修正",
+      "week": 3,
+      "description": "重现语法错误、幻觉函数与逻辑错误，验证修正后的结果。",
+      "stdin": "",
+      "nodes": [
+        {
+          "id": "input",
+          "type": "Constant",
+          "title": "输入数据",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": null
+          }
+        },
+        {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python 处理",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "cases = [\n    {'kind':'SyntaxError', 'bad':'result = (1 +', 'fixed':'result = 1 + 2', 'expected':3},\n    {'kind':'AttributeError', 'bad':'import math\\nresult = math.square(4)', 'fixed':'result = 4 ** 2', 'expected':16},\n    {'kind':'AssertionError', 'bad':'result = 70 / 1.75', 'fixed':'result = round(70 / 1.75 ** 2, 2)', 'expected':22.86},\n]\nlogs = []\nfor case in cases:\n    try:\n        namespace = {}\n        exec(compile(case['bad'], '<AI proposal>', 'exec'), namespace)\n        assert namespace['result'] == case['expected'], '公式错误'\n    except (SyntaxError, AttributeError, AssertionError) as exc:\n        detected = type(exc).__name__\n        print(f'发现 {detected}，开始验证修正')\n    else:\n        raise AssertionError('预设错误未被发现')\n    namespace = {}\n    exec(compile(case['fixed'], '<corrected>', 'exec'), namespace)\n    assert namespace['result'] == case['expected']\n    logs.append({'failure': detected, 'fixed_result': namespace['result'], 'verified': True})\nresult = logs"
+          }
+        },
+        {
+          "id": "out",
+          "type": "Output",
+          "title": "结果",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        }
+      ],
+      "edges": [
+        {
+          "source": "input",
+          "out": "value",
+          "target": "logic",
+          "in": "value"
+        },
+        {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        }
+      ],
+      "checks": {
+        "out": {
+          "value": [
+            {
+              "failure": "SyntaxError",
+              "fixed_result": 3,
+              "verified": true
+            },
+            {
+              "failure": "AttributeError",
+              "fixed_result": 16,
+              "verified": true
+            },
+            {
+              "failure": "AssertionError",
+              "fixed_result": 22.86,
+              "verified": true
+            }
+          ]
+        }
+      },
+      "verified": true
+    },
+    "expected": {
+      "input": {
+        "value": null
+      },
+      "logic": {
+        "value": [
+          {
+            "failure": "SyntaxError",
+            "fixed_result": 3,
+            "verified": true
+          },
+          {
+            "failure": "AttributeError",
+            "fixed_result": 16,
+            "verified": true
+          },
+          {
+            "failure": "AssertionError",
+            "fixed_result": 22.86,
+            "verified": true
+          }
+        ]
+      },
+      "out": {
+        "value": [
+          {
+            "failure": "SyntaxError",
+            "fixed_result": 3,
+            "verified": true
+          },
+          {
+            "failure": "AttributeError",
+            "fixed_result": 16,
+            "verified": true
+          },
+          {
+            "failure": "AssertionError",
+            "fixed_result": 22.86,
+            "verified": true
+          }
+        ]
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示AI 调试日志：三次失败与修正。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "input",
+          "type": "Constant",
+          "title": "输入数据",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": null
+          }
+        },
+        "text": "添加 Constant 节点。在右侧填入本例的数据。常量可以是数字、字符串、列表或字典，使用合法的 JSON 格式。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python 处理",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "cases = [\n    {'kind':'SyntaxError', 'bad':'result = (1 +', 'fixed':'result = 1 + 2', 'expected':3},\n    {'kind':'AttributeError', 'bad':'import math\\nresult = math.square(4)', 'fixed':'result = 4 ** 2', 'expected':16},\n    {'kind':'AssertionError', 'bad':'result = 70 / 1.75', 'fixed':'result = round(70 / 1.75 ** 2, 2)', 'expected':22.86},\n]\nlogs = []\nfor case in cases:\n    try:\n        namespace = {}\n        exec(compile(case['bad'], '<AI proposal>', 'exec'), namespace)\n        assert namespace['result'] == case['expected'], '公式错误'\n    except (SyntaxError, AttributeError, AssertionError) as exc:\n        detected = type(exc).__name__\n        print(f'发现 {detected}，开始验证修正')\n    else:\n        raise AssertionError('预设错误未被发现')\n    namespace = {}\n    exec(compile(case['fixed'], '<corrected>', 'exec'), namespace)\n    assert namespace['result'] == case['expected']\n    logs.append({'failure': detected, 'fixed_result': namespace['result'], 'verified': True})\nresult = logs"
+          }
+        },
+        "text": "添加 Python 节点。把处理逻辑写在这个节点里，输入由连线传入，结果写入 result。这样主画布保持简洁。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "input",
+          "out": "value",
+          "target": "logic",
+          "in": "value"
+        },
+        "text": "点击 Constant 的 value 输出，再点击 Python 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "结果",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Python 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "w04_exceptions_logs",
+    "name": "异常捕获与打印调试",
+    "graph": {
+      "version": 1,
+      "name": "异常捕获与打印调试",
+      "week": 4,
+      "description": "对正常输入、除零和无效数字逐项测试，异常不会中断整个批次。",
+      "stdin": "",
+      "nodes": [
+        {
+          "id": "pairs",
+          "type": "Constant",
+          "title": "Constant",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": [
+              [
+                12,
+                3
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                "bad",
+                2
+              ]
+            ]
+          }
+        },
+        {
+          "id": "function",
+          "type": "Function",
+          "title": "Function",
+          "x": 340,
+          "y": 330,
+          "config": {
+            "name": "safe_divide",
+            "code": "def safe_divide(pair):\n    try:\n        a, b = map(float, pair)\n        return {'ok': True, 'value': a / b}\n    except (ValueError, TypeError, ZeroDivisionError) as exc:\n        print(type(exc).__name__, pair)\n        return {'ok': False, 'error': type(exc).__name__}"
+          }
+        },
+        {
+          "id": "map",
+          "type": "Map",
+          "title": "Map",
+          "x": 340,
+          "y": 80,
+          "config": {}
+        },
+        {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        }
+      ],
+      "edges": [
+        {
+          "source": "pairs",
+          "out": "value",
+          "target": "map",
+          "in": "items"
+        },
+        {
+          "source": "function",
+          "out": "function",
+          "target": "map",
+          "in": "function"
+        },
+        {
+          "source": "map",
+          "out": "items",
+          "target": "out",
+          "in": "value"
+        }
+      ],
+      "checks": {
+        "out": {
+          "value": [
+            {
+              "ok": true,
+              "value": 4.0
+            },
+            {
+              "ok": false,
+              "error": "ZeroDivisionError"
+            },
+            {
+              "ok": false,
+              "error": "ValueError"
+            }
+          ]
+        }
+      },
+      "verified": true
+    },
+    "expected": {
+      "pairs": {
+        "value": [
+          [
+            12,
+            3
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            "bad",
+            2
+          ]
+        ]
+      },
+      "map": {
+        "items": [
+          {
+            "ok": true,
+            "value": 4.0
+          },
+          {
+            "ok": false,
+            "error": "ZeroDivisionError"
+          },
+          {
+            "ok": false,
+            "error": "ValueError"
+          }
+        ],
+        "count": 3
+      },
+      "out": {
+        "value": [
+          {
+            "ok": true,
+            "value": 4.0
+          },
+          {
+            "ok": false,
+            "error": "ZeroDivisionError"
+          },
+          {
+            "ok": false,
+            "error": "ValueError"
+          }
+        ]
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示异常捕获与打印调试。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "pairs",
+          "type": "Constant",
+          "title": "Constant",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": [
+              [
+                12,
+                3
+              ],
+              [
+                1,
+                0
+              ],
+              [
+                "bad",
+                2
+              ]
+            ]
+          }
+        },
+        "text": "添加 Constant 节点。在右侧填入本例的数据。常量可以是数字、字符串、列表或字典，使用合法的 JSON 格式。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "function",
+          "type": "Function",
+          "title": "Function",
+          "x": 340,
+          "y": 330,
+          "config": {
+            "name": "safe_divide",
+            "code": "def safe_divide(pair):\n    try:\n        a, b = map(float, pair)\n        return {'ok': True, 'value': a / b}\n    except (ValueError, TypeError, ZeroDivisionError) as exc:\n        print(type(exc).__name__, pair)\n        return {'ok': False, 'error': type(exc).__name__}"
+          }
+        },
+        "text": "添加 Function 节点。填写函数源码和输出函数名。这里保留 Python 原生参数规则，定义函数和调用函数分开。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "map",
+          "type": "Map",
+          "title": "Map",
+          "x": 340,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Map 节点。这个节点逐项处理列表。具体逻辑可以来自函数回调，也可以放在内部子图。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "pairs",
+          "out": "value",
+          "target": "map",
+          "in": "items"
+        },
+        "text": "点击 Constant 的 value 输出，再点击 Map 的 items 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "function",
+          "out": "function",
+          "target": "map",
+          "in": "function"
+        },
+        "text": "点击 Function 的 function 输出，再点击 Map 的 function 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "map",
+          "out": "items",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Map 的 items 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "w05_guess_number",
+    "name": "猜数字游戏：难度与循环",
+    "graph": {
+      "version": 1,
+      "name": "猜数字游戏：难度与循环",
+      "week": 5,
+      "description": "easy / normal / hard；固定随机种子可重复测试，input() 输入猜测。",
+      "stdin": "normal\n10\n30\n21\n",
+      "nodes": [
+        {
+          "id": "game",
+          "type": "Python",
+          "title": "猜数字逻辑",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "code": "import random\nlevels = {'easy': (20, 6), 'normal': (50, 5), 'hard': (100, 3)}\nlevel = input('难度 easy/normal/hard：').strip()\nif level not in levels:\n    raise ValueError('不支持的难度')\nupper, max_attempts = levels[level]\ntarget = random.Random(7).randint(1, upper)\nguesses, won = [], False\nfor attempt in range(max_attempts):\n    guess = int(input(f'第 {attempt + 1} 次猜测：'))\n    guesses.append(guess)\n    if guess == target:\n        won = True\n        print('猜对了！')\n        break\n    print('太小' if guess < target else '太大')\nresult = {'difficulty': level, 'won': won, 'attempts': len(guesses), 'target': target}"
+          }
+        },
+        {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 390,
+          "y": 80,
+          "config": {}
+        }
+      ],
+      "edges": [
+        {
+          "source": "game",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        }
+      ],
+      "checks": {
+        "out": {
+          "value": {
+            "difficulty": "normal",
+            "won": true,
+            "attempts": 3,
+            "target": 21
+          }
+        }
+      },
+      "verified": true
+    },
+    "expected": {
+      "game": {
+        "value": {
+          "difficulty": "normal",
+          "won": true,
+          "attempts": 3,
+          "target": 21
+        }
+      },
+      "out": {
+        "value": {
+          "difficulty": "normal",
+          "won": true,
+          "attempts": 3,
+          "target": 21
+        }
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示猜数字游戏：难度与循环。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "game",
+          "type": "Python",
+          "title": "猜数字逻辑",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "code": "import random\nlevels = {'easy': (20, 6), 'normal': (50, 5), 'hard': (100, 3)}\nlevel = input('难度 easy/normal/hard：').strip()\nif level not in levels:\n    raise ValueError('不支持的难度')\nupper, max_attempts = levels[level]\ntarget = random.Random(7).randint(1, upper)\nguesses, won = [], False\nfor attempt in range(max_attempts):\n    guess = int(input(f'第 {attempt + 1} 次猜测：'))\n    guesses.append(guess)\n    if guess == target:\n        won = True\n        print('猜对了！')\n        break\n    print('太小' if guess < target else '太大')\nresult = {'difficulty': level, 'won': won, 'attempts': len(guesses), 'target': target}"
+          }
+        },
+        "text": "添加 Python 节点。把处理逻辑写在这个节点里，输入由连线传入，结果写入 result。这样主画布保持简洁。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 390,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "game",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Python 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "stdin",
+        "value": "normal\n10\n30\n21\n",
+        "text": "点击输入，逐行填写交互测试数据。程序每调用一次 input，就读取一行，便于重复验证同一个过程。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "w05_loop_early_exit",
+    "name": "循环中的 continue / break",
+    "graph": {
+      "version": 1,
+      "name": "循环中的 continue / break",
+      "week": 5,
+      "description": "Loop 显式持有 item、index、acc；忽略空行并遇 END 停止。",
+      "stdin": "",
+      "nodes": [
+        {
+          "id": "rows",
+          "type": "Constant",
+          "title": "Constant",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": [
+              "10",
+              "",
+              "20",
+              "END",
+              "999"
+            ]
+          }
+        },
+        {
+          "id": "loop",
+          "type": "Loop",
+          "title": "Loop",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "if item == \"END\":\n    break\nif not item:\n    continue\nresult = int(item)"
+          }
+        },
+        {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        }
+      ],
+      "edges": [
+        {
+          "source": "rows",
+          "out": "value",
+          "target": "loop",
+          "in": "items"
+        },
+        {
+          "source": "loop",
+          "out": "items",
+          "target": "out",
+          "in": "value"
+        }
+      ],
+      "checks": {
+        "out": {
+          "value": [
+            10,
+            20
+          ]
+        }
+      },
+      "verified": true
+    },
+    "expected": {
+      "rows": {
+        "value": [
+          "10",
+          "",
+          "20",
+          "END",
+          "999"
+        ]
+      },
+      "loop": {
+        "items": [
+          10,
+          20
+        ],
+        "count": 2
+      },
+      "out": {
+        "value": [
+          10,
+          20
+        ]
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示循环中的 continue / break。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "rows",
+          "type": "Constant",
+          "title": "Constant",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": [
+              "10",
+              "",
+              "20",
+              "END",
+              "999"
+            ]
+          }
+        },
+        "text": "添加 Constant 节点。在右侧填入本例的数据。常量可以是数字、字符串、列表或字典，使用合法的 JSON 格式。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "loop",
+          "type": "Loop",
+          "title": "Loop",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "if item == \"END\":\n    break\nif not item:\n    continue\nresult = int(item)"
+          }
+        },
+        "text": "添加 Loop 节点。输入循环体代码。使用 item 读取当前项，continue 跳过，break 提前结束。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "rows",
+          "out": "value",
+          "target": "loop",
+          "in": "items"
+        },
+        "text": "点击 Constant 的 value 输出，再点击 Loop 的 items 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "loop",
+          "out": "items",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Loop 的 items 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "w06_gradebook_list",
+    "name": "学生成绩管理：列表与元组",
+    "graph": {
+      "version": 1,
+      "name": "学生成绩管理：列表与元组",
+      "week": 6,
+      "description": "新增、修改、删除、排序与聚合；元组保留不可变记录。",
+      "stdin": "",
+      "nodes": [
+        {
+          "id": "input",
+          "type": "Constant",
+          "title": "输入数据",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": [
+              [
+                "Alice",
+                85
+              ],
+              [
+                "Bob",
+                59
+              ],
+              [
+                "Chen",
+                92
+              ]
+            ]
+          }
+        },
+        {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python 处理",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "students = [list(row) for row in value]\nstudents.append(['Dora', 78])\nfor row in students:\n    if row[0] == 'Bob': row[1] = 65\nstudents = [row for row in students if row[0] != 'Dora']\nranked = sorted((tuple(row) for row in students), key=lambda row: row[1], reverse=True)\nresult = {'ranked': ranked, 'average': round(sum(row[1] for row in ranked)/len(ranked), 2), 'passed': sum(score >= 60 for _, score in ranked)}"
+          }
+        },
+        {
+          "id": "out",
+          "type": "Output",
+          "title": "结果",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        }
+      ],
+      "edges": [
+        {
+          "source": "input",
+          "out": "value",
+          "target": "logic",
+          "in": "value"
+        },
+        {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        }
+      ],
+      "checks": {
+        "out": {
+          "value": {
+            "ranked": [
+              [
+                "Chen",
+                92
+              ],
+              [
+                "Alice",
+                85
+              ],
+              [
+                "Bob",
+                65
+              ]
+            ],
+            "average": 80.67,
+            "passed": 3
+          }
+        }
+      },
+      "verified": true
+    },
+    "expected": {
+      "input": {
+        "value": [
+          [
+            "Alice",
+            85
+          ],
+          [
+            "Bob",
+            59
+          ],
+          [
+            "Chen",
+            92
+          ]
+        ]
+      },
+      "logic": {
+        "value": {
+          "ranked": [
+            [
+              "Chen",
+              92
+            ],
+            [
+              "Alice",
+              85
+            ],
+            [
+              "Bob",
+              65
+            ]
+          ],
+          "average": 80.67,
+          "passed": 3
+        }
+      },
+      "out": {
+        "value": {
+          "ranked": [
+            [
+              "Chen",
+              92
+            ],
+            [
+              "Alice",
+              85
+            ],
+            [
+              "Bob",
+              65
+            ]
+          ],
+          "average": 80.67,
+          "passed": 3
+        }
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示学生成绩管理：列表与元组。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "input",
+          "type": "Constant",
+          "title": "输入数据",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": [
+              [
+                "Alice",
+                85
+              ],
+              [
+                "Bob",
+                59
+              ],
+              [
+                "Chen",
+                92
+              ]
+            ]
+          }
+        },
+        "text": "添加 Constant 节点。在右侧填入本例的数据。常量可以是数字、字符串、列表或字典，使用合法的 JSON 格式。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python 处理",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "students = [list(row) for row in value]\nstudents.append(['Dora', 78])\nfor row in students:\n    if row[0] == 'Bob': row[1] = 65\nstudents = [row for row in students if row[0] != 'Dora']\nranked = sorted((tuple(row) for row in students), key=lambda row: row[1], reverse=True)\nresult = {'ranked': ranked, 'average': round(sum(row[1] for row in ranked)/len(ranked), 2), 'passed': sum(score >= 60 for _, score in ranked)}"
+          }
+        },
+        "text": "添加 Python 节点。把处理逻辑写在这个节点里，输入由连线传入，结果写入 result。这样主画布保持简洁。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "input",
+          "out": "value",
+          "target": "logic",
+          "in": "value"
+        },
+        "text": "点击 Constant 的 value 输出，再点击 Python 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "结果",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Python 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "w07_gradebook_dict",
+    "name": "学生成绩管理：字典与集合",
+    "graph": {
+      "version": 1,
+      "name": "学生成绩管理：字典与集合",
+      "week": 7,
+      "description": "字典增删改查、集合交并差以及重复值消除。",
+      "stdin": "",
+      "nodes": [
+        {
+          "id": "input",
+          "type": "Constant",
+          "title": "输入数据",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": {
+              "Alice": 85,
+              "Bob": 59,
+              "Chen": 92
+            }
+          }
+        },
+        {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python 处理",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "scores = dict(value)\nscores.update(Bob=65, Dora=78)\ndel scores['Dora']\npassed = {name for name, score in scores.items() if score >= 60}\nregistered = {'Alice', 'Bob', 'Chen', 'Dora'}\nresult = {'scores': scores, 'passed': sorted(passed), 'missing': sorted(registered-set(scores)), 'shared': sorted(passed & registered), 'unique_scores': sorted(set(scores.values()))}"
+          }
+        },
+        {
+          "id": "out",
+          "type": "Output",
+          "title": "结果",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        }
+      ],
+      "edges": [
+        {
+          "source": "input",
+          "out": "value",
+          "target": "logic",
+          "in": "value"
+        },
+        {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        }
+      ],
+      "checks": {
+        "out": {
+          "value": {
+            "scores": {
+              "Alice": 85,
+              "Bob": 65,
+              "Chen": 92
+            },
+            "passed": [
+              "Alice",
+              "Bob",
+              "Chen"
+            ],
+            "missing": [
+              "Dora"
+            ],
+            "shared": [
+              "Alice",
+              "Bob",
+              "Chen"
+            ],
+            "unique_scores": [
+              65,
+              85,
+              92
+            ]
+          }
+        }
+      },
+      "verified": true
+    },
+    "expected": {
+      "input": {
+        "value": {
+          "Alice": 85,
+          "Bob": 59,
+          "Chen": 92
+        }
+      },
+      "logic": {
+        "value": {
+          "scores": {
+            "Alice": 85,
+            "Bob": 65,
+            "Chen": 92
+          },
+          "passed": [
+            "Alice",
+            "Bob",
+            "Chen"
+          ],
+          "missing": [
+            "Dora"
+          ],
+          "shared": [
+            "Alice",
+            "Bob",
+            "Chen"
+          ],
+          "unique_scores": [
+            65,
+            85,
+            92
+          ]
+        }
+      },
+      "out": {
+        "value": {
+          "scores": {
+            "Alice": 85,
+            "Bob": 65,
+            "Chen": 92
+          },
+          "passed": [
+            "Alice",
+            "Bob",
+            "Chen"
+          ],
+          "missing": [
+            "Dora"
+          ],
+          "shared": [
+            "Alice",
+            "Bob",
+            "Chen"
+          ],
+          "unique_scores": [
+            65,
+            85,
+            92
+          ]
+        }
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示学生成绩管理：字典与集合。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "input",
+          "type": "Constant",
+          "title": "输入数据",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": {
+              "Alice": 85,
+              "Bob": 59,
+              "Chen": 92
+            }
+          }
+        },
+        "text": "添加 Constant 节点。在右侧填入本例的数据。常量可以是数字、字符串、列表或字典，使用合法的 JSON 格式。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python 处理",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "scores = dict(value)\nscores.update(Bob=65, Dora=78)\ndel scores['Dora']\npassed = {name for name, score in scores.items() if score >= 60}\nregistered = {'Alice', 'Bob', 'Chen', 'Dora'}\nresult = {'scores': scores, 'passed': sorted(passed), 'missing': sorted(registered-set(scores)), 'shared': sorted(passed & registered), 'unique_scores': sorted(set(scores.values()))}"
+          }
+        },
+        "text": "添加 Python 节点。把处理逻辑写在这个节点里，输入由连线传入，结果写入 result。这样主画布保持简洁。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "input",
+          "out": "value",
+          "target": "logic",
+          "in": "value"
+        },
+        "text": "点击 Constant 的 value 输出，再点击 Python 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "结果",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Python 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "w07_lookup_comparison",
+    "name": "列表和字典的查找对比",
+    "graph": {
+      "version": 1,
+      "name": "列表和字典的查找对比",
+      "week": 7,
+      "description": "同一批查询比较线性查找与字典查找，断言结果一致；不把耗时当正确性。",
+      "stdin": "",
+      "nodes": [
+        {
+          "id": "input",
+          "type": "Constant",
+          "title": "输入数据",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": {
+              "count": 2000,
+              "queries": [
+                3,
+                100,
+                1999,
+                2500
+              ]
+            }
+          }
+        },
+        {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python 处理",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "records = [(i, i * 10) for i in range(value['count'])]\nindex = dict(records)\nlist_result = [next((score for key, score in records if key == q), None) for q in value['queries']]\ndict_result = [index.get(q) for q in value['queries']]\nassert list_result == dict_result\nresult = {'same': True, 'results': dict_result, 'rows': len(records)}"
+          }
+        },
+        {
+          "id": "out",
+          "type": "Output",
+          "title": "结果",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        }
+      ],
+      "edges": [
+        {
+          "source": "input",
+          "out": "value",
+          "target": "logic",
+          "in": "value"
+        },
+        {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        }
+      ],
+      "checks": {
+        "out": {
+          "value": {
+            "same": true,
+            "results": [
+              30,
+              1000,
+              19990,
+              null
+            ],
+            "rows": 2000
+          }
+        }
+      },
+      "verified": true
+    },
+    "expected": {
+      "input": {
+        "value": {
+          "count": 2000,
+          "queries": [
+            3,
+            100,
+            1999,
+            2500
+          ]
+        }
+      },
+      "logic": {
+        "value": {
+          "same": true,
+          "results": [
+            30,
+            1000,
+            19990,
+            null
+          ],
+          "rows": 2000
+        }
+      },
+      "out": {
+        "value": {
+          "same": true,
+          "results": [
+            30,
+            1000,
+            19990,
+            null
+          ],
+          "rows": 2000
+        }
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示列表和字典的查找对比。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "input",
+          "type": "Constant",
+          "title": "输入数据",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": {
+              "count": 2000,
+              "queries": [
+                3,
+                100,
+                1999,
+                2500
+              ]
+            }
+          }
+        },
+        "text": "添加 Constant 节点。在右侧填入本例的数据。常量可以是数字、字符串、列表或字典，使用合法的 JSON 格式。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python 处理",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "records = [(i, i * 10) for i in range(value['count'])]\nindex = dict(records)\nlist_result = [next((score for key, score in records if key == q), None) for q in value['queries']]\ndict_result = [index.get(q) for q in value['queries']]\nassert list_result == dict_result\nresult = {'same': True, 'results': dict_result, 'rows': len(records)}"
+          }
+        },
+        "text": "添加 Python 节点。把处理逻辑写在这个节点里，输入由连线传入，结果写入 result。这样主画布保持简洁。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "input",
+          "out": "value",
+          "target": "logic",
+          "in": "value"
+        },
+        "text": "点击 Constant 的 value 输出，再点击 Python 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "结果",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Python 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "w08_contacts_regex",
+    "name": "标准库：提取邮箱与手机号",
+    "graph": {
+      "version": 1,
+      "name": "标准库：提取邮箱与手机号",
+      "week": 8,
+      "description": "仅做文本抽取：两个正则输出列表，再由 Python 合并结构化结果。",
+      "stdin": "",
+      "nodes": [
+        {
+          "id": "text",
+          "type": "LoadText",
+          "title": "LoadText",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "text": "联系 alice@example.com / bob@test.org；手机 13800138000、13912345678。"
+          }
+        },
+        {
+          "id": "emails",
+          "type": "RegexFindall",
+          "title": "RegexFindall",
+          "x": 340,
+          "y": 80,
+          "config": {
+            "pattern": "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
+          }
+        },
+        {
+          "id": "phones",
+          "type": "RegexFindall",
+          "title": "RegexFindall",
+          "x": 340,
+          "y": 370,
+          "config": {
+            "pattern": "(?<!\\d)1[3-9]\\d{9}(?!\\d)"
+          }
+        },
+        {
+          "id": "combine",
+          "type": "Python",
+          "title": "Python",
+          "x": 680,
+          "y": 80,
+          "config": {
+            "code": "result = {\"emails\": value, \"phones\": items}"
+          }
+        },
+        {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 1020,
+          "y": 80,
+          "config": {}
+        }
+      ],
+      "edges": [
+        {
+          "source": "text",
+          "out": "text",
+          "target": "emails",
+          "in": "text"
+        },
+        {
+          "source": "text",
+          "out": "text",
+          "target": "phones",
+          "in": "text"
+        },
+        {
+          "source": "emails",
+          "out": "matches",
+          "target": "combine",
+          "in": "value"
+        },
+        {
+          "source": "phones",
+          "out": "matches",
+          "target": "combine",
+          "in": "items"
+        },
+        {
+          "source": "combine",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        }
+      ],
+      "checks": {
+        "out": {
+          "value": {
+            "emails": [
+              "alice@example.com",
+              "bob@test.org"
+            ],
+            "phones": [
+              "13800138000",
+              "13912345678"
+            ]
+          }
+        }
+      },
+      "verified": true
+    },
+    "expected": {
+      "text": {
+        "text": "联系 alice@example.com / bob@test.org；手机 13800138000、13912345678。"
+      },
+      "emails": {
+        "matches": [
+          "alice@example.com",
+          "bob@test.org"
+        ],
+        "ok": true
+      },
+      "phones": {
+        "matches": [
+          "13800138000",
+          "13912345678"
+        ],
+        "ok": true
+      },
+      "combine": {
+        "value": {
+          "emails": [
+            "alice@example.com",
+            "bob@test.org"
+          ],
+          "phones": [
+            "13800138000",
+            "13912345678"
+          ]
+        }
+      },
+      "out": {
+        "value": {
+          "emails": [
+            "alice@example.com",
+            "bob@test.org"
+          ],
+          "phones": [
+            "13800138000",
+            "13912345678"
+          ]
+        }
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示标准库：提取邮箱与手机号。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "text",
+          "type": "LoadText",
+          "title": "LoadText",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "text": "联系 alice@example.com / bob@test.org；手机 13800138000、13912345678。"
+          }
+        },
+        "text": "添加 LoadText 节点。在右侧输入要处理的原始文本，后续节点通过连线取得字符串。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "emails",
+          "type": "RegexFindall",
+          "title": "RegexFindall",
+          "x": 340,
+          "y": 80,
+          "config": {
+            "pattern": "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
+          }
+        },
+        "text": "添加 RegexFindall 节点。输入正则表达式，一次提取所有匹配，输出列表。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "text",
+          "out": "text",
+          "target": "emails",
+          "in": "text"
+        },
+        "text": "点击 LoadText 的 text 输出，再点击 RegexFindall 的 text 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "phones",
+          "type": "RegexFindall",
+          "title": "RegexFindall",
+          "x": 340,
+          "y": 370,
+          "config": {
+            "pattern": "(?<!\\d)1[3-9]\\d{9}(?!\\d)"
+          }
+        },
+        "text": "添加 RegexFindall 节点。输入正则表达式，一次提取所有匹配，输出列表。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "text",
+          "out": "text",
+          "target": "phones",
+          "in": "text"
+        },
+        "text": "点击 LoadText 的 text 输出，再点击 RegexFindall 的 text 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "combine",
+          "type": "Python",
+          "title": "Python",
+          "x": 680,
+          "y": 80,
+          "config": {
+            "code": "result = {\"emails\": value, \"phones\": items}"
+          }
+        },
+        "text": "添加 Python 节点。把处理逻辑写在这个节点里，输入由连线传入，结果写入 result。这样主画布保持简洁。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "emails",
+          "out": "matches",
+          "target": "combine",
+          "in": "value"
+        },
+        "text": "点击 RegexFindall 的 matches 输出，再点击 Python 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "phones",
+          "out": "matches",
+          "target": "combine",
+          "in": "items"
+        },
+        "text": "点击 RegexFindall 的 matches 输出，再点击 Python 的 items 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 1020,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "combine",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Python 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "w08_import_math",
+    "name": "模块导入与函数属性",
+    "graph": {
+      "version": 1,
+      "name": "模块导入与函数属性",
+      "week": 8,
+      "description": "ImportModule 导入 math.sqrt；函数引用通过连线传给 Call。",
+      "stdin": "",
+      "nodes": [
+        {
+          "id": "import",
+          "type": "ImportModule",
+          "title": "ImportModule",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "module": "math",
+            "attribute": "sqrt"
+          }
+        },
+        {
+          "id": "call",
+          "type": "Call",
+          "title": "Call",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "args": [
+              81
+            ]
+          }
+        },
+        {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        }
+      ],
+      "edges": [
+        {
+          "source": "import",
+          "out": "value",
+          "target": "call",
+          "in": "function"
+        },
+        {
+          "source": "call",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        }
+      ],
+      "checks": {
+        "out": {
+          "value": 9.0
+        }
+      },
+      "verified": true
+    },
+    "expected": {
+      "import": {
+        "value": "<built-in function sqrt>"
+      },
+      "call": {
+        "value": 9.0
+      },
+      "out": {
+        "value": 9.0
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示模块导入与函数属性。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "import",
+          "type": "ImportModule",
+          "title": "ImportModule",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "module": "math",
+            "attribute": "sqrt"
+          }
+        },
+        "text": "添加 ImportModule 节点。填写模块名称及属性路径，取得标准库中的函数引用。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "call",
+          "type": "Call",
+          "title": "Call",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "args": [
+              81
+            ]
+          }
+        },
+        "text": "添加 Call 节点。填写位置参数和关键字参数。调用节点负责把参数传给上游函数。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "import",
+          "out": "value",
+          "target": "call",
+          "in": "function"
+        },
+        "text": "点击 ImportModule 的 value 输出，再点击 Call 的 function 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "call",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Call 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "w08_loan",
+    "name": "标准库：等额本息月供",
+    "graph": {
+      "version": 1,
+      "name": "标准库：等额本息月供",
+      "week": 8,
+      "description": "函数、math.pow 与零利率分支；年利率使用小数，例如 0.045。",
+      "stdin": "",
+      "nodes": [
+        {
+          "id": "input",
+          "type": "Constant",
+          "title": "输入数据",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": {
+              "principal": 100000,
+              "annual_rate": 0.045,
+              "months": 360
+            }
+          }
+        },
+        {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python 处理",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "import math\nprincipal, annual_rate, months = value['principal'], value['annual_rate'], value['months']\nif principal <= 0 or annual_rate < 0 or months <= 0 or int(months) != months:\n    raise ValueError('贷款本金、利率或期数无效')\nrate = annual_rate / 12\npayment = principal / months if rate == 0 else principal * rate * math.pow(1 + rate, months) / (math.pow(1 + rate, months) - 1)\nresult = {'monthly_payment': round(payment, 2), 'months': months}"
+          }
+        },
+        {
+          "id": "out",
+          "type": "Output",
+          "title": "结果",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        }
+      ],
+      "edges": [
+        {
+          "source": "input",
+          "out": "value",
+          "target": "logic",
+          "in": "value"
+        },
+        {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        }
+      ],
+      "checks": {
+        "out": {
+          "value": {
+            "monthly_payment": 506.69,
+            "months": 360
+          }
+        }
+      },
+      "verified": true
+    },
+    "expected": {
+      "input": {
+        "value": {
+          "principal": 100000,
+          "annual_rate": 0.045,
+          "months": 360
+        }
+      },
+      "logic": {
+        "value": {
+          "monthly_payment": 506.69,
+          "months": 360
+        }
+      },
+      "out": {
+        "value": {
+          "monthly_payment": 506.69,
+          "months": 360
+        }
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示标准库：等额本息月供。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "input",
+          "type": "Constant",
+          "title": "输入数据",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": {
+              "principal": 100000,
+              "annual_rate": 0.045,
+              "months": 360
+            }
+          }
+        },
+        "text": "添加 Constant 节点。在右侧填入本例的数据。常量可以是数字、字符串、列表或字典，使用合法的 JSON 格式。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python 处理",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "import math\nprincipal, annual_rate, months = value['principal'], value['annual_rate'], value['months']\nif principal <= 0 or annual_rate < 0 or months <= 0 or int(months) != months:\n    raise ValueError('贷款本金、利率或期数无效')\nrate = annual_rate / 12\npayment = principal / months if rate == 0 else principal * rate * math.pow(1 + rate, months) / (math.pow(1 + rate, months) - 1)\nresult = {'monthly_payment': round(payment, 2), 'months': months}"
+          }
+        },
+        "text": "添加 Python 节点。把处理逻辑写在这个节点里，输入由连线传入，结果写入 result。这样主画布保持简洁。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "input",
+          "out": "value",
+          "target": "logic",
+          "in": "value"
+        },
+        "text": "点击 Constant 的 value 输出，再点击 Python 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "结果",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Python 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "w08_lottery",
+    "name": "标准库：双色球号码",
+    "graph": {
+      "version": 1,
+      "name": "标准库：双色球号码",
+      "week": 8,
+      "description": "random.Random 固定种子、sample 无重复抽样、排序与区间断言。",
+      "stdin": "",
+      "nodes": [
+        {
+          "id": "input",
+          "type": "Constant",
+          "title": "输入数据",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": {
+              "seed": 42
+            }
+          }
+        },
+        {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python 处理",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "import random\nrng = random.Random(value['seed'])\nred = sorted(rng.sample(range(1, 34), 6))\nblue = rng.randint(1, 16)\nassert len(set(red)) == 6 and all(1 <= n <= 33 for n in red)\nassert 1 <= blue <= 16\nresult = {'red': red, 'blue': blue}"
+          }
+        },
+        {
+          "id": "out",
+          "type": "Output",
+          "title": "结果",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        }
+      ],
+      "edges": [
+        {
+          "source": "input",
+          "out": "value",
+          "target": "logic",
+          "in": "value"
+        },
+        {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        }
+      ],
+      "checks": {
+        "out": {
+          "value": {
+            "red": [
+              2,
+              8,
+              9,
+              24,
+              29,
+              33
+            ],
+            "blue": 5
+          }
+        }
+      },
+      "verified": true
+    },
+    "expected": {
+      "input": {
+        "value": {
+          "seed": 42
+        }
+      },
+      "logic": {
+        "value": {
+          "red": [
+            2,
+            8,
+            9,
+            24,
+            29,
+            33
+          ],
+          "blue": 5
+        }
+      },
+      "out": {
+        "value": {
+          "red": [
+            2,
+            8,
+            9,
+            24,
+            29,
+            33
+          ],
+          "blue": 5
+        }
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示标准库：双色球号码。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "input",
+          "type": "Constant",
+          "title": "输入数据",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": {
+              "seed": 42
+            }
+          }
+        },
+        "text": "添加 Constant 节点。在右侧填入本例的数据。常量可以是数字、字符串、列表或字典，使用合法的 JSON 格式。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python 处理",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "import random\nrng = random.Random(value['seed'])\nred = sorted(rng.sample(range(1, 34), 6))\nblue = rng.randint(1, 16)\nassert len(set(red)) == 6 and all(1 <= n <= 33 for n in red)\nassert 1 <= blue <= 16\nresult = {'red': red, 'blue': blue}"
+          }
+        },
+        "text": "添加 Python 节点。把处理逻辑写在这个节点里，输入由连线传入，结果写入 result。这样主画布保持简洁。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "input",
+          "out": "value",
+          "target": "logic",
+          "in": "value"
+        },
+        "text": "点击 Constant 的 value 输出，再点击 Python 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "结果",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Python 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "w08_string_constants",
+    "name": "标准库：string 与可重复随机字符串",
+    "graph": {
+      "version": 1,
+      "name": "标准库：string 与可重复随机字符串",
+      "week": 8,
+      "description": "string.ascii_letters / digits；教学用随机标识符，不作为密码。",
+      "stdin": "",
+      "nodes": [
+        {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "code": "import string\nimport random\nrng = random.Random(12)\nalphabet = string.ascii_letters + string.digits\ntoken = ''.join(rng.choice(alphabet) for _ in range(12))\nresult = {'length': len(token), 'valid': all(c in alphabet for c in token)}"
+          }
+        },
+        {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 380,
+          "y": 80,
+          "config": {}
+        }
+      ],
+      "edges": [
+        {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        }
+      ],
+      "checks": {
+        "out": {
+          "value": {
+            "length": 12,
+            "valid": true
+          }
+        }
+      },
+      "verified": true
+    },
+    "expected": {
+      "logic": {
+        "value": {
+          "length": 12,
+          "valid": true
+        }
+      },
+      "out": {
+        "value": {
+          "length": 12,
+          "valid": true
+        }
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示标准库：string 与可重复随机字符串。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "code": "import string\nimport random\nrng = random.Random(12)\nalphabet = string.ascii_letters + string.digits\ntoken = ''.join(rng.choice(alphabet) for _ in range(12))\nresult = {'length': len(token), 'valid': all(c in alphabet for c in token)}"
+          }
+        },
+        "text": "添加 Python 节点。把处理逻辑写在这个节点里，输入由连线传入，结果写入 result。这样主画布保持简洁。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 380,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Python 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "w09_lambda_higher_order",
+    "name": "Lambda 与高阶 map / filter",
+    "graph": {
+      "version": 1,
+      "name": "Lambda 与高阶 map / filter",
+      "week": 9,
+      "description": "匿名函数作为一等值；Map 变换成绩，Filter 按谓词筛选。",
+      "stdin": "",
+      "nodes": [
+        {
+          "id": "scores",
+          "type": "Constant",
+          "title": "Constant",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": [
+              45,
+              59,
+              60,
+              85,
+              98
+            ]
+          }
+        },
+        {
+          "id": "add",
+          "type": "Lambda",
+          "title": "Lambda",
+          "x": 30,
+          "y": 370,
+          "config": {
+            "params": "score",
+            "expression": "min(score + 5, 100)"
+          }
+        },
+        {
+          "id": "map",
+          "type": "Map",
+          "title": "Map",
+          "x": 350,
+          "y": 80,
+          "config": {}
+        },
+        {
+          "id": "passing",
+          "type": "Lambda",
+          "title": "Lambda",
+          "x": 350,
+          "y": 370,
+          "config": {
+            "params": "score",
+            "expression": "score >= 60"
+          }
+        },
+        {
+          "id": "filter",
+          "type": "Filter",
+          "title": "Filter",
+          "x": 680,
+          "y": 80,
+          "config": {}
+        },
+        {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 1010,
+          "y": 80,
+          "config": {}
+        }
+      ],
+      "edges": [
+        {
+          "source": "scores",
+          "out": "value",
+          "target": "map",
+          "in": "items"
+        },
+        {
+          "source": "add",
+          "out": "function",
+          "target": "map",
+          "in": "function"
+        },
+        {
+          "source": "map",
+          "out": "items",
+          "target": "filter",
+          "in": "items"
+        },
+        {
+          "source": "passing",
+          "out": "function",
+          "target": "filter",
+          "in": "function"
+        },
+        {
+          "source": "filter",
+          "out": "items",
+          "target": "out",
+          "in": "value"
+        }
+      ],
+      "checks": {
+        "out": {
+          "value": [
+            64,
+            65,
+            90,
+            100
+          ]
+        }
+      },
+      "verified": true
+    },
+    "expected": {
+      "scores": {
+        "value": [
+          45,
+          59,
+          60,
+          85,
+          98
+        ]
+      },
+      "map": {
+        "items": [
+          50,
+          64,
+          65,
+          90,
+          100
+        ],
+        "count": 5
+      },
+      "filter": {
+        "items": [
+          64,
+          65,
+          90,
+          100
+        ],
+        "count": 4
+      },
+      "out": {
+        "value": [
+          64,
+          65,
+          90,
+          100
+        ]
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示Lambda 与高阶 map / filter。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "scores",
+          "type": "Constant",
+          "title": "Constant",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": [
+              45,
+              59,
+              60,
+              85,
+              98
+            ]
+          }
+        },
+        "text": "添加 Constant 节点。在右侧填入本例的数据。常量可以是数字、字符串、列表或字典，使用合法的 JSON 格式。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "add",
+          "type": "Lambda",
+          "title": "Lambda",
+          "x": 30,
+          "y": 370,
+          "config": {
+            "params": "score",
+            "expression": "min(score + 5, 100)"
+          }
+        },
+        "text": "添加 Lambda 节点。填写参数和返回表达式，匿名函数也可以沿着连线传递。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "map",
+          "type": "Map",
+          "title": "Map",
+          "x": 350,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Map 节点。这个节点逐项处理列表。具体逻辑可以来自函数回调，也可以放在内部子图。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "scores",
+          "out": "value",
+          "target": "map",
+          "in": "items"
+        },
+        "text": "点击 Constant 的 value 输出，再点击 Map 的 items 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "add",
+          "out": "function",
+          "target": "map",
+          "in": "function"
+        },
+        "text": "点击 Lambda 的 function 输出，再点击 Map 的 function 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "passing",
+          "type": "Lambda",
+          "title": "Lambda",
+          "x": 350,
+          "y": 370,
+          "config": {
+            "params": "score",
+            "expression": "score >= 60"
+          }
+        },
+        "text": "添加 Lambda 节点。填写参数和返回表达式，匿名函数也可以沿着连线传递。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "filter",
+          "type": "Filter",
+          "title": "Filter",
+          "x": 680,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Filter 节点。这个节点只负责筛选。谓词返回真时保留当前项，返回假时丢弃。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "map",
+          "out": "items",
+          "target": "filter",
+          "in": "items"
+        },
+        "text": "点击 Map 的 items 输出，再点击 Filter 的 items 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "passing",
+          "out": "function",
+          "target": "filter",
+          "in": "function"
+        },
+        "text": "点击 Lambda 的 function 输出，再点击 Filter 的 function 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 1010,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "filter",
+          "out": "items",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Filter 的 items 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "w09_salary_functions",
+    "name": "薪资计算器：完整函数签名",
+    "graph": {
+      "version": 1,
+      "name": "薪资计算器：完整函数签名",
+      "week": 9,
+      "description": "位置限定参数、*bonuses、默认值、关键字参数和 **metadata。",
+      "stdin": "",
+      "nodes": [
+        {
+          "id": "salary",
+          "type": "Function",
+          "title": "Function",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "name": "salary",
+            "code": "def salary(base, /, *bonuses, tax_rate=0.1, allowance=0, **metadata):\n    if base < 0 or not 0 <= tax_rate <= 1:\n        raise ValueError('薪资或税率无效')\n    gross = base + sum(bonuses) + allowance\n    return {'gross': round(gross, 2), 'net': round(gross * (1-tax_rate), 2), 'employee': metadata.get('employee', 'anonymous')}"
+          }
+        },
+        {
+          "id": "args",
+          "type": "Constant",
+          "title": "Constant",
+          "x": 30,
+          "y": 380,
+          "config": {
+            "value": [
+              10000,
+              1000,
+              500
+            ]
+          }
+        },
+        {
+          "id": "call",
+          "type": "Call",
+          "title": "Call",
+          "x": 400,
+          "y": 80,
+          "config": {
+            "kwargs": {
+              "tax_rate": 0.1,
+              "allowance": 200,
+              "employee": "Alice"
+            }
+          }
+        },
+        {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 760,
+          "y": 80,
+          "config": {}
+        }
+      ],
+      "edges": [
+        {
+          "source": "salary",
+          "out": "function",
+          "target": "call",
+          "in": "function"
+        },
+        {
+          "source": "args",
+          "out": "value",
+          "target": "call",
+          "in": "args"
+        },
+        {
+          "source": "call",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        }
+      ],
+      "checks": {
+        "out": {
+          "value": {
+            "gross": 11700,
+            "net": 10530.0,
+            "employee": "Alice"
+          }
+        }
+      },
+      "verified": true
+    },
+    "expected": {
+      "args": {
+        "value": [
+          10000,
+          1000,
+          500
+        ]
+      },
+      "call": {
+        "value": {
+          "gross": 11700,
+          "net": 10530.0,
+          "employee": "Alice"
+        }
+      },
+      "out": {
+        "value": {
+          "gross": 11700,
+          "net": 10530.0,
+          "employee": "Alice"
+        }
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示薪资计算器：完整函数签名。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "salary",
+          "type": "Function",
+          "title": "Function",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "name": "salary",
+            "code": "def salary(base, /, *bonuses, tax_rate=0.1, allowance=0, **metadata):\n    if base < 0 or not 0 <= tax_rate <= 1:\n        raise ValueError('薪资或税率无效')\n    gross = base + sum(bonuses) + allowance\n    return {'gross': round(gross, 2), 'net': round(gross * (1-tax_rate), 2), 'employee': metadata.get('employee', 'anonymous')}"
+          }
+        },
+        "text": "添加 Function 节点。填写函数源码和输出函数名。这里保留 Python 原生参数规则，定义函数和调用函数分开。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "args",
+          "type": "Constant",
+          "title": "Constant",
+          "x": 30,
+          "y": 380,
+          "config": {
+            "value": [
+              10000,
+              1000,
+              500
+            ]
+          }
+        },
+        "text": "添加 Constant 节点。在右侧填入本例的数据。常量可以是数字、字符串、列表或字典，使用合法的 JSON 格式。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "call",
+          "type": "Call",
+          "title": "Call",
+          "x": 400,
+          "y": 80,
+          "config": {
+            "kwargs": {
+              "tax_rate": 0.1,
+              "allowance": 200,
+              "employee": "Alice"
+            }
+          }
+        },
+        "text": "添加 Call 节点。填写位置参数和关键字参数。调用节点负责把参数传给上游函数。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "salary",
+          "out": "function",
+          "target": "call",
+          "in": "function"
+        },
+        "text": "点击 Function 的 function 输出，再点击 Call 的 function 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "args",
+          "out": "value",
+          "target": "call",
+          "in": "args"
+        },
+        "text": "点击 Constant 的 value 输出，再点击 Call 的 args 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 760,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "call",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Call 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "w10_modular_gradebook",
+    "name": "模块化重构：成绩管理",
+    "graph": {
+      "version": 1,
+      "name": "模块化重构：成绩管理",
+      "week": 10,
+      "description": "Module 定义独立命名空间 → Get 提取 summarize → Call 传入成绩。",
+      "stdin": "",
+      "nodes": [
+        {
+          "id": "module",
+          "type": "Module",
+          "title": "Module",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "name": "gradebook",
+            "code": "def validate_scores(records):\n    if not records or any(not 0 <= score <= 100 for score in records.values()):\n        raise ValueError('成绩必须在 0 到 100 之间，且记录不为空')\n    return dict(records)\n\ndef summarize(records):\n    scores = validate_scores(records)\n    return {'count': len(scores), 'average': round(sum(scores.values())/len(scores),2), 'top': max(scores,key=scores.get)}"
+          }
+        },
+        {
+          "id": "get",
+          "type": "Get",
+          "title": "Get",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "path": "summarize"
+          }
+        },
+        {
+          "id": "call",
+          "type": "Call",
+          "title": "Call",
+          "x": 680,
+          "y": 80,
+          "config": {
+            "args": [
+              {
+                "Alice": 85,
+                "Bob": 65,
+                "Chen": 92
+              }
+            ]
+          }
+        },
+        {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 1010,
+          "y": 80,
+          "config": {}
+        }
+      ],
+      "edges": [
+        {
+          "source": "module",
+          "out": "value",
+          "target": "get",
+          "in": "value"
+        },
+        {
+          "source": "get",
+          "out": "value",
+          "target": "call",
+          "in": "function"
+        },
+        {
+          "source": "call",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        }
+      ],
+      "checks": {
+        "out": {
+          "value": {
+            "count": 3,
+            "average": 80.67,
+            "top": "Chen"
+          }
+        }
+      },
+      "verified": true
+    },
+    "expected": {
+      "module": {
+        "value": "<module 'gradebook'>"
+      },
+      "get": {
+        "value": "<function summarize at 0x105df1da0>"
+      },
+      "call": {
+        "value": {
+          "count": 3,
+          "average": 80.67,
+          "top": "Chen"
+        }
+      },
+      "out": {
+        "value": {
+          "count": 3,
+          "average": 80.67,
+          "top": "Chen"
+        }
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示模块化重构：成绩管理。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "module",
+          "type": "Module",
+          "title": "Module",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "name": "gradebook",
+            "code": "def validate_scores(records):\n    if not records or any(not 0 <= score <= 100 for score in records.values()):\n        raise ValueError('成绩必须在 0 到 100 之间，且记录不为空')\n    return dict(records)\n\ndef summarize(records):\n    scores = validate_scores(records)\n    return {'count': len(scores), 'average': round(sum(scores.values())/len(scores),2), 'top': max(scores,key=scores.get)}"
+          }
+        },
+        "text": "添加 Module 节点。填写模块名称和源码。相关函数放在独立命名空间内，方便复用。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "get",
+          "type": "Get",
+          "title": "Get",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "path": "summarize"
+          }
+        },
+        "text": "添加 Get 节点。填写要读取的字段或属性路径。这里可以从模块中取得指定函数。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "module",
+          "out": "value",
+          "target": "get",
+          "in": "value"
+        },
+        "text": "点击 Module 的 value 输出，再点击 Get 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "call",
+          "type": "Call",
+          "title": "Call",
+          "x": 680,
+          "y": 80,
+          "config": {
+            "args": [
+              {
+                "Alice": 85,
+                "Bob": 65,
+                "Chen": 92
+              }
+            ]
+          }
+        },
+        "text": "添加 Call 节点。填写位置参数和关键字参数。调用节点负责把参数传给上游函数。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "get",
+          "out": "value",
+          "target": "call",
+          "in": "function"
+        },
+        "text": "点击 Get 的 value 输出，再点击 Call 的 function 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 1010,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "call",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Call 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "w10_nested_subgraph",
+    "name": "模块化重构：可视化子图",
+    "graph": {
+      "version": 1,
+      "name": "模块化重构：可视化子图",
+      "week": 10,
+      "description": "主画布只保留列表与 Map；进入 Map 子图编辑单条记录的处理。",
+      "stdin": "",
+      "nodes": [
+        {
+          "id": "records",
+          "type": "Constant",
+          "title": "Constant",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": [
+              {
+                "name": "Alice",
+                "score": 85
+              },
+              {
+                "name": "Bob",
+                "score": 59
+              }
+            ]
+          }
+        },
+        {
+          "id": "map",
+          "type": "Map",
+          "title": "Map",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "body": {
+              "version": 1,
+              "name": "验证单条学生记录",
+              "nodes": [
+                {
+                  "id": "item",
+                  "type": "Item",
+                  "title": "Item",
+                  "x": 30,
+                  "y": 80,
+                  "config": {
+                    "value": {
+                      "name": "Alice",
+                      "score": 85
+                    }
+                  }
+                },
+                {
+                  "id": "check",
+                  "type": "Python",
+                  "title": "Python",
+                  "x": 340,
+                  "y": 80,
+                  "config": {
+                    "code": "if not isinstance(value, dict):\n    raise TypeError(\"记录必须是 dict\")\nresult = {\"name\": value[\"name\"], \"passed\": value[\"score\"] >= 60}"
+                  }
+                },
+                {
+                  "id": "out",
+                  "type": "Output",
+                  "title": "Output",
+                  "x": 680,
+                  "y": 80,
+                  "config": {}
+                }
+              ],
+              "edges": [
+                {
+                  "source": "item",
+                  "out": "value",
+                  "target": "check",
+                  "in": "value"
+                },
+                {
+                  "source": "check",
+                  "out": "value",
+                  "target": "out",
+                  "in": "value"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        }
+      ],
+      "edges": [
+        {
+          "source": "records",
+          "out": "value",
+          "target": "map",
+          "in": "items"
+        },
+        {
+          "source": "map",
+          "out": "items",
+          "target": "out",
+          "in": "value"
+        }
+      ],
+      "checks": {
+        "out": {
+          "value": [
+            {
+              "name": "Alice",
+              "passed": true
+            },
+            {
+              "name": "Bob",
+              "passed": false
+            }
+          ]
+        }
+      },
+      "verified": true
+    },
+    "expected": {
+      "records": {
+        "value": [
+          {
+            "name": "Alice",
+            "score": 85
+          },
+          {
+            "name": "Bob",
+            "score": 59
+          }
+        ]
+      },
+      "map": {
+        "items": [
+          {
+            "name": "Alice",
+            "passed": true
+          },
+          {
+            "name": "Bob",
+            "passed": false
+          }
+        ],
+        "count": 2
+      },
+      "out": {
+        "value": [
+          {
+            "name": "Alice",
+            "passed": true
+          },
+          {
+            "name": "Bob",
+            "passed": false
+          }
+        ]
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示模块化重构：可视化子图。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "records",
+          "type": "Constant",
+          "title": "Constant",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": [
+              {
+                "name": "Alice",
+                "score": 85
+              },
+              {
+                "name": "Bob",
+                "score": 59
+              }
+            ]
+          }
+        },
+        "text": "添加 Constant 节点。在右侧填入本例的数据。常量可以是数字、字符串、列表或字典，使用合法的 JSON 格式。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "map",
+          "type": "Map",
+          "title": "Map",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "body": {
+              "version": 1,
+              "name": "验证单条学生记录",
+              "nodes": [
+                {
+                  "id": "item",
+                  "type": "Item",
+                  "title": "Item",
+                  "x": 30,
+                  "y": 80,
+                  "config": {
+                    "value": {
+                      "name": "Alice",
+                      "score": 85
+                    }
+                  }
+                },
+                {
+                  "id": "check",
+                  "type": "Python",
+                  "title": "Python",
+                  "x": 340,
+                  "y": 80,
+                  "config": {
+                    "code": "if not isinstance(value, dict):\n    raise TypeError(\"记录必须是 dict\")\nresult = {\"name\": value[\"name\"], \"passed\": value[\"score\"] >= 60}"
+                  }
+                },
+                {
+                  "id": "out",
+                  "type": "Output",
+                  "title": "Output",
+                  "x": 680,
+                  "y": 80,
+                  "config": {}
+                }
+              ],
+              "edges": [
+                {
+                  "source": "item",
+                  "out": "value",
+                  "target": "check",
+                  "in": "value"
+                },
+                {
+                  "source": "check",
+                  "out": "value",
+                  "target": "out",
+                  "in": "value"
+                }
+              ]
+            }
+          }
+        },
+        "text": "添加 Map 节点。这个节点逐项处理列表。具体逻辑可以来自函数回调，也可以放在内部子图。"
+      },
+      {
+        "action": "enter",
+        "scope": "",
+        "node_id": "map",
+        "text": "进入可视化子图。子画布同样从空白开始，逐个建立单项处理流程。"
+      },
+      {
+        "action": "node",
+        "scope": "map/",
+        "node": {
+          "id": "item",
+          "type": "Item",
+          "title": "Item",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": {
+              "name": "Alice",
+              "score": 85
+            }
+          }
+        },
+        "text": "添加 Item 节点。设置单独测试子图时使用的数据。正式循环时，这里会接收到列表当前项。"
+      },
+      {
+        "action": "node",
+        "scope": "map/",
+        "node": {
+          "id": "check",
+          "type": "Python",
+          "title": "Python",
+          "x": 340,
+          "y": 80,
+          "config": {
+            "code": "if not isinstance(value, dict):\n    raise TypeError(\"记录必须是 dict\")\nresult = {\"name\": value[\"name\"], \"passed\": value[\"score\"] >= 60}"
+          }
+        },
+        "text": "添加 Python 节点。把处理逻辑写在这个节点里，输入由连线传入，结果写入 result。这样主画布保持简洁。"
+      },
+      {
+        "action": "edge",
+        "scope": "map/",
+        "edge": {
+          "source": "item",
+          "out": "value",
+          "target": "check",
+          "in": "value"
+        },
+        "text": "点击 Item 的 value 输出，再点击 Python 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "map/",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 680,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "map/",
+        "edge": {
+          "source": "check",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Python 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "leave",
+        "text": "子图已经连接完成。返回主画布，Map 会对列表中的每条记录执行这个子流程。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "records",
+          "out": "value",
+          "target": "map",
+          "in": "items"
+        },
+        "text": "点击 Constant 的 value 输出，再点击 Map 的 items 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "Output",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "map",
+          "out": "items",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Map 的 items 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "w11_basic_pandas",
+    "name": "基础 pandas：表格清洗与筛选",
+    "graph": {
+      "version": 1,
+      "name": "基础 pandas：表格清洗与筛选",
+      "week": 11,
+      "description": "DataFrame、dropna、astype、布尔筛选、列选择与 to_dict；无额外数据框架。",
+      "stdin": "",
+      "nodes": [
+        {
+          "id": "input",
+          "type": "Constant",
+          "title": "输入数据",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": [
+              {
+                "name": "Alice",
+                "score": "85"
+              },
+              {
+                "name": "Bob",
+                "score": null
+              },
+              {
+                "name": "Chen",
+                "score": "59"
+              },
+              {
+                "name": "Dora",
+                "score": "92"
+              }
+            ]
+          }
+        },
+        {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python 处理",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "import pandas as pd\nframe = pd.DataFrame(value)\nframe = frame.dropna(subset=['score']).copy()\nframe['score'] = frame['score'].astype(int)\npassed = frame.loc[frame['score'] >= 60, ['name','score']].sort_values('score',ascending=False)\nresult = {'records': passed.to_dict(orient='records'), 'count': len(passed), 'average': float(passed['score'].mean())}"
+          }
+        },
+        {
+          "id": "out",
+          "type": "Output",
+          "title": "结果",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        }
+      ],
+      "edges": [
+        {
+          "source": "input",
+          "out": "value",
+          "target": "logic",
+          "in": "value"
+        },
+        {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        }
+      ],
+      "checks": {
+        "out": {
+          "value": {
+            "records": [
+              {
+                "name": "Dora",
+                "score": 92
+              },
+              {
+                "name": "Alice",
+                "score": 85
+              }
+            ],
+            "count": 2,
+            "average": 88.5
+          }
+        }
+      },
+      "verified": true
+    },
+    "expected": {
+      "input": {
+        "value": [
+          {
+            "name": "Alice",
+            "score": "85"
+          },
+          {
+            "name": "Bob",
+            "score": null
+          },
+          {
+            "name": "Chen",
+            "score": "59"
+          },
+          {
+            "name": "Dora",
+            "score": "92"
+          }
+        ]
+      },
+      "logic": {
+        "value": {
+          "records": [
+            {
+              "name": "Dora",
+              "score": 92
+            },
+            {
+              "name": "Alice",
+              "score": 85
+            }
+          ],
+          "count": 2,
+          "average": 88.5
+        }
+      },
+      "out": {
+        "value": {
+          "records": [
+            {
+              "name": "Dora",
+              "score": 92
+            },
+            {
+              "name": "Alice",
+              "score": 85
+            }
+          ],
+          "count": 2,
+          "average": 88.5
+        }
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示基础 pandas：表格清洗与筛选。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "input",
+          "type": "Constant",
+          "title": "输入数据",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": [
+              {
+                "name": "Alice",
+                "score": "85"
+              },
+              {
+                "name": "Bob",
+                "score": null
+              },
+              {
+                "name": "Chen",
+                "score": "59"
+              },
+              {
+                "name": "Dora",
+                "score": "92"
+              }
+            ]
+          }
+        },
+        "text": "添加 Constant 节点。在右侧填入本例的数据。常量可以是数字、字符串、列表或字典，使用合法的 JSON 格式。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python 处理",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "import pandas as pd\nframe = pd.DataFrame(value)\nframe = frame.dropna(subset=['score']).copy()\nframe['score'] = frame['score'].astype(int)\npassed = frame.loc[frame['score'] >= 60, ['name','score']].sort_values('score',ascending=False)\nresult = {'records': passed.to_dict(orient='records'), 'count': len(passed), 'average': float(passed['score'].mean())}"
+          }
+        },
+        "text": "添加 Python 节点。把处理逻辑写在这个节点里，输入由连线传入，结果写入 result。这样主画布保持简洁。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "input",
+          "out": "value",
+          "target": "logic",
+          "in": "value"
+        },
+        "text": "点击 Constant 的 value 输出，再点击 Python 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "结果",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Python 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "w11_csv_json_roundtrip",
+    "name": "文件读写：CSV 与 JSON",
+    "graph": {
+      "version": 1,
+      "name": "文件读写：CSV 与 JSON",
+      "week": 11,
+      "description": "用 tempfile 在临时目录真实写入并读回 Unicode CSV/JSON，验证内容一致。",
+      "stdin": "",
+      "nodes": [
+        {
+          "id": "input",
+          "type": "Constant",
+          "title": "输入数据",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": [
+              {
+                "name": "小明",
+                "score": 85
+              },
+              {
+                "name": "小红",
+                "score": 92
+              }
+            ]
+          }
+        },
+        {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python 处理",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "import csv, json, tempfile\nfrom pathlib import Path\nwith tempfile.TemporaryDirectory() as folder:\n    folder = Path(folder)\n    csv_path, json_path = folder/'scores.csv', folder/'scores.json'\n    with csv_path.open('w', newline='', encoding='utf-8') as file:\n        writer = csv.DictWriter(file, fieldnames=['name','score'])\n        writer.writeheader()\n        writer.writerows(value)\n    with csv_path.open(encoding='utf-8', newline='') as file:\n        rows = [{'name': row['name'], 'score': int(row['score'])} for row in csv.DictReader(file)]\n    json_path.write_text(json.dumps(rows, ensure_ascii=False), encoding='utf-8')\n    restored = json.loads(json_path.read_text(encoding='utf-8'))\n    assert restored == value\n    result = {'rows': restored, 'roundtrip': True}"
+          }
+        },
+        {
+          "id": "out",
+          "type": "Output",
+          "title": "结果",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        }
+      ],
+      "edges": [
+        {
+          "source": "input",
+          "out": "value",
+          "target": "logic",
+          "in": "value"
+        },
+        {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        }
+      ],
+      "checks": {
+        "out": {
+          "value": {
+            "rows": [
+              {
+                "name": "小明",
+                "score": 85
+              },
+              {
+                "name": "小红",
+                "score": 92
+              }
+            ],
+            "roundtrip": true
+          }
+        }
+      },
+      "verified": true
+    },
+    "expected": {
+      "input": {
+        "value": [
+          {
+            "name": "小明",
+            "score": 85
+          },
+          {
+            "name": "小红",
+            "score": 92
+          }
+        ]
+      },
+      "logic": {
+        "value": {
+          "rows": [
+            {
+              "name": "小明",
+              "score": 85
+            },
+            {
+              "name": "小红",
+              "score": 92
+            }
+          ],
+          "roundtrip": true
+        }
+      },
+      "out": {
+        "value": {
+          "rows": [
+            {
+              "name": "小明",
+              "score": 85
+            },
+            {
+              "name": "小红",
+              "score": 92
+            }
+          ],
+          "roundtrip": true
+        }
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示文件读写：CSV 与 JSON。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "input",
+          "type": "Constant",
+          "title": "输入数据",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": [
+              {
+                "name": "小明",
+                "score": 85
+              },
+              {
+                "name": "小红",
+                "score": 92
+              }
+            ]
+          }
+        },
+        "text": "添加 Constant 节点。在右侧填入本例的数据。常量可以是数字、字符串、列表或字典，使用合法的 JSON 格式。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python 处理",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "import csv, json, tempfile\nfrom pathlib import Path\nwith tempfile.TemporaryDirectory() as folder:\n    folder = Path(folder)\n    csv_path, json_path = folder/'scores.csv', folder/'scores.json'\n    with csv_path.open('w', newline='', encoding='utf-8') as file:\n        writer = csv.DictWriter(file, fieldnames=['name','score'])\n        writer.writeheader()\n        writer.writerows(value)\n    with csv_path.open(encoding='utf-8', newline='') as file:\n        rows = [{'name': row['name'], 'score': int(row['score'])} for row in csv.DictReader(file)]\n    json_path.write_text(json.dumps(rows, ensure_ascii=False), encoding='utf-8')\n    restored = json.loads(json_path.read_text(encoding='utf-8'))\n    assert restored == value\n    result = {'rows': restored, 'roundtrip': True}"
+          }
+        },
+        "text": "添加 Python 节点。把处理逻辑写在这个节点里，输入由连线传入，结果写入 result。这样主画布保持简洁。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "input",
+          "out": "value",
+          "target": "logic",
+          "in": "value"
+        },
+        "text": "点击 Constant 的 value 输出，再点击 Python 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "结果",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Python 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  },
+  {
+    "slug": "w11_survey_collection",
+    "name": "问卷收集：校验、去重与保存",
+    "graph": {
+      "version": 1,
+      "name": "问卷收集：校验、去重与保存",
+      "week": 11,
+      "description": "有效记录写入 artifacts/survey.csv 与 survey.json；保留错误报告。",
+      "stdin": "",
+      "nodes": [
+        {
+          "id": "input",
+          "type": "Constant",
+          "title": "输入数据",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": [
+              {
+                "name": "Alice",
+                "age": "20",
+                "rating": "5"
+              },
+              {
+                "name": "Bob",
+                "age": "-2",
+                "rating": "4"
+              },
+              {
+                "name": "Chen",
+                "age": "22",
+                "rating": "3"
+              },
+              {
+                "name": "Alice",
+                "age": "20",
+                "rating": "5"
+              }
+            ]
+          }
+        },
+        {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python 处理",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "import csv, json\nfrom pathlib import Path\naccepted, errors, seen = [], [], set()\nfor index, row in enumerate(value):\n    try:\n        name = row['name'].strip()\n        age, rating = int(row['age']), int(row['rating'])\n        if not name or not 0 < age < 130 or not 1 <= rating <= 5:\n            raise ValueError('字段超出有效范围')\n        if name in seen:\n            raise ValueError('重复提交')\n        seen.add(name)\n        accepted.append({'name':name,'age':age,'rating':rating})\n    except (ValueError, KeyError, TypeError) as exc:\n        errors.append({'row':index+1,'error':str(exc)})\noutput = Path('artifacts')\noutput.mkdir(exist_ok=True)\nwith (output/'survey.csv').open('w',newline='',encoding='utf-8') as file:\n    writer = csv.DictWriter(file,fieldnames=['name','age','rating'])\n    writer.writeheader()\n    writer.writerows(accepted)\n(output/'survey.json').write_text(json.dumps(accepted,ensure_ascii=False,indent=2),encoding='utf-8')\nresult = {'accepted':len(accepted),'rejected':len(errors),'records':accepted,'errors':errors}"
+          }
+        },
+        {
+          "id": "out",
+          "type": "Output",
+          "title": "结果",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        }
+      ],
+      "edges": [
+        {
+          "source": "input",
+          "out": "value",
+          "target": "logic",
+          "in": "value"
+        },
+        {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        }
+      ],
+      "checks": {
+        "out": {
+          "value": {
+            "accepted": 2,
+            "rejected": 2,
+            "records": [
+              {
+                "name": "Alice",
+                "age": 20,
+                "rating": 5
+              },
+              {
+                "name": "Chen",
+                "age": 22,
+                "rating": 3
+              }
+            ],
+            "errors": [
+              {
+                "row": 2,
+                "error": "字段超出有效范围"
+              },
+              {
+                "row": 4,
+                "error": "重复提交"
+              }
+            ]
+          }
+        }
+      },
+      "verified": true
+    },
+    "expected": {
+      "input": {
+        "value": [
+          {
+            "name": "Alice",
+            "age": "20",
+            "rating": "5"
+          },
+          {
+            "name": "Bob",
+            "age": "-2",
+            "rating": "4"
+          },
+          {
+            "name": "Chen",
+            "age": "22",
+            "rating": "3"
+          },
+          {
+            "name": "Alice",
+            "age": "20",
+            "rating": "5"
+          }
+        ]
+      },
+      "logic": {
+        "value": {
+          "accepted": 2,
+          "rejected": 2,
+          "records": [
+            {
+              "name": "Alice",
+              "age": 20,
+              "rating": 5
+            },
+            {
+              "name": "Chen",
+              "age": 22,
+              "rating": 3
+            }
+          ],
+          "errors": [
+            {
+              "row": 2,
+              "error": "字段超出有效范围"
+            },
+            {
+              "row": 4,
+              "error": "重复提交"
+            }
+          ]
+        }
+      },
+      "out": {
+        "value": {
+          "accepted": 2,
+          "rejected": 2,
+          "records": [
+            {
+              "name": "Alice",
+              "age": 20,
+              "rating": 5
+            },
+            {
+              "name": "Chen",
+              "age": 22,
+              "rating": 3
+            }
+          ],
+          "errors": [
+            {
+              "row": 2,
+              "error": "字段超出有效范围"
+            },
+            {
+              "row": 4,
+              "error": "重复提交"
+            }
+          ]
+        }
+      }
+    },
+    "steps": [
+      {
+        "action": "start",
+        "text": "这一节演示问卷收集：校验、去重与保存。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "input",
+          "type": "Constant",
+          "title": "输入数据",
+          "x": 30,
+          "y": 80,
+          "config": {
+            "value": [
+              {
+                "name": "Alice",
+                "age": "20",
+                "rating": "5"
+              },
+              {
+                "name": "Bob",
+                "age": "-2",
+                "rating": "4"
+              },
+              {
+                "name": "Chen",
+                "age": "22",
+                "rating": "3"
+              },
+              {
+                "name": "Alice",
+                "age": "20",
+                "rating": "5"
+              }
+            ]
+          }
+        },
+        "text": "添加 Constant 节点。在右侧填入本例的数据。常量可以是数字、字符串、列表或字典，使用合法的 JSON 格式。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "logic",
+          "type": "Python",
+          "title": "Python 处理",
+          "x": 350,
+          "y": 80,
+          "config": {
+            "code": "import csv, json\nfrom pathlib import Path\naccepted, errors, seen = [], [], set()\nfor index, row in enumerate(value):\n    try:\n        name = row['name'].strip()\n        age, rating = int(row['age']), int(row['rating'])\n        if not name or not 0 < age < 130 or not 1 <= rating <= 5:\n            raise ValueError('字段超出有效范围')\n        if name in seen:\n            raise ValueError('重复提交')\n        seen.add(name)\n        accepted.append({'name':name,'age':age,'rating':rating})\n    except (ValueError, KeyError, TypeError) as exc:\n        errors.append({'row':index+1,'error':str(exc)})\noutput = Path('artifacts')\noutput.mkdir(exist_ok=True)\nwith (output/'survey.csv').open('w',newline='',encoding='utf-8') as file:\n    writer = csv.DictWriter(file,fieldnames=['name','age','rating'])\n    writer.writeheader()\n    writer.writerows(accepted)\n(output/'survey.json').write_text(json.dumps(accepted,ensure_ascii=False,indent=2),encoding='utf-8')\nresult = {'accepted':len(accepted),'rejected':len(errors),'records':accepted,'errors':errors}"
+          }
+        },
+        "text": "添加 Python 节点。把处理逻辑写在这个节点里，输入由连线传入，结果写入 result。这样主画布保持简洁。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "input",
+          "out": "value",
+          "target": "logic",
+          "in": "value"
+        },
+        "text": "点击 Constant 的 value 输出，再点击 Python 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "node",
+        "scope": "",
+        "node": {
+          "id": "out",
+          "type": "Output",
+          "title": "结果",
+          "x": 700,
+          "y": 80,
+          "config": {}
+        },
+        "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。"
+      },
+      {
+        "action": "edge",
+        "scope": "",
+        "edge": {
+          "source": "logic",
+          "out": "value",
+          "target": "out",
+          "in": "value"
+        },
+        "text": "点击 Python 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。"
+      },
+      {
+        "action": "run",
+        "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。"
+      },
+      {
+        "action": "result",
+        "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。"
+      }
+    ]
+  }
+]

@@ -1,0 +1,75 @@
+{
+  "slug": "w10_modular_gradebook",
+  "raw_file": "batch05.mp4",
+  "meta_file": "batch05.meta.json",
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "start": 1789888628.661,
+      "end": 1789888629.514
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "start": 1789888629.528,
+      "end": 1789888630.415
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "start": 1789888630.425,
+      "end": 1789888631.396
+    },
+    {
+      "index": 3,
+      "action": "edge",
+      "start": 1789888631.433,
+      "end": 1789888632.488
+    },
+    {
+      "index": 4,
+      "action": "node",
+      "start": 1789888632.514,
+      "end": 1789888633.63
+    },
+    {
+      "index": 5,
+      "action": "edge",
+      "start": 1789888633.674,
+      "end": 1789888634.812
+    },
+    {
+      "index": 6,
+      "action": "node",
+      "start": 1789888634.84,
+      "end": 1789888635.851
+    },
+    {
+      "index": 7,
+      "action": "edge",
+      "start": 1789888635.879,
+      "end": 1789888636.962
+    },
+    {
+      "index": 8,
+      "action": "run",
+      "start": 1789888636.981,
+      "end": 1789888637.636
+    },
+    {
+      "index": 9,
+      "action": "result",
+      "start": 1789888654.977,
+      "end": 1789888655.487
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "uiConstructed": true,
+    "expectedMatched": true,
+    "nodes": 4,
+    "edges": 3,
+    "status": "执行成功，所有可展示输出与预期一致"
+  }
+}

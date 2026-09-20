@@ -1,0 +1,51 @@
+{
+  "slug": "w08_string_constants",
+  "raw_file": "batch04.mp4",
+  "meta_file": "batch04.meta.json",
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "start": 1789888557.902,
+      "end": 1789888558.764
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "start": 1789888558.816,
+      "end": 1789888559.987
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "start": 1789888560.014,
+      "end": 1789888561.007
+    },
+    {
+      "index": 3,
+      "action": "edge",
+      "start": 1789888561.036,
+      "end": 1789888562.065
+    },
+    {
+      "index": 4,
+      "action": "run",
+      "start": 1789888562.09,
+      "end": 1789888562.694
+    },
+    {
+      "index": 5,
+      "action": "result",
+      "start": 1789888562.711,
+      "end": 1789888563.216
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "uiConstructed": true,
+    "expectedMatched": true,
+    "nodes": 2,
+    "edges": 1,
+    "status": "执行成功，所有可展示输出与预期一致"
+  }
+}

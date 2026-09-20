@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "name": "异常捕获与打印调试",
+  "week": 4,
+  "description": "对正常输入、除零和无效数字逐项测试，异常不会中断整个批次。",
+  "stdin": "",
+  "nodes": [
+    {
+      "id": "pairs",
+      "type": "Constant",
+      "title": "Constant",
+      "x": 30,
+      "y": 80,
+      "config": {
+        "value": [
+          [
+            12,
+            3
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            "bad",
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "id": "function",
+      "type": "Function",
+      "title": "Function",
+      "x": 340,
+      "y": 330,
+      "config": {
+        "name": "safe_divide",
+        "code": "def safe_divide(pair):\n    try:\n        a, b = map(float, pair)\n        return {'ok': True, 'value': a / b}\n    except (ValueError, TypeError, ZeroDivisionError) as exc:\n        print(type(exc).__name__, pair)\n        return {'ok': False, 'error': type(exc).__name__}"
+      }
+    },
+    {
+      "id": "map",
+      "type": "Map",
+      "title": "Map",
+      "x": 340,
+      "y": 80,
+      "config": {}
+    },
+    {
+      "id": "out",
+      "type": "Output",
+      "title": "Output",
+      "x": 700,
+      "y": 80,
+      "config": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "pairs",
+      "out": "value",
+      "target": "map",
+      "in": "items"
+    },
+    {
+      "source": "function",
+      "out": "function",
+      "target": "map",
+      "in": "function"
+    },
+    {
+      "source": "map",
+      "out": "items",
+      "target": "out",
+      "in": "value"
+    }
+  ],
+  "checks": {
+    "out": {
+      "value": [
+        {
+          "ok": true,
+          "value": 4.0
+        },
+        {
+          "ok": false,
+          "error": "ZeroDivisionError"
+        },
+        {
+          "ok": false,
+          "error": "ValueError"
+        }
+      ]
+    }
+  },
+  "verified": true
+}

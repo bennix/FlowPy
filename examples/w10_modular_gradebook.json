@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "name": "模块化重构：成绩管理",
+  "week": 10,
+  "description": "Module 定义独立命名空间 → Get 提取 summarize → Call 传入成绩。",
+  "stdin": "",
+  "nodes": [
+    {
+      "id": "module",
+      "type": "Module",
+      "title": "Module",
+      "x": 30,
+      "y": 80,
+      "config": {
+        "name": "gradebook",
+        "code": "def validate_scores(records):\n    if not records or any(not 0 <= score <= 100 for score in records.values()):\n        raise ValueError('成绩必须在 0 到 100 之间，且记录不为空')\n    return dict(records)\n\ndef summarize(records):\n    scores = validate_scores(records)\n    return {'count': len(scores), 'average': round(sum(scores.values())/len(scores),2), 'top': max(scores,key=scores.get)}"
+      }
+    },
+    {
+      "id": "get",
+      "type": "Get",
+      "title": "Get",
+      "x": 350,
+      "y": 80,
+      "config": {
+        "path": "summarize"
+      }
+    },
+    {
+      "id": "call",
+      "type": "Call",
+      "title": "Call",
+      "x": 680,
+      "y": 80,
+      "config": {
+        "args": [
+          {
+            "Alice": 85,
+            "Bob": 65,
+            "Chen": 92
+          }
+        ]
+      }
+    },
+    {
+      "id": "out",
+      "type": "Output",
+      "title": "Output",
+      "x": 1010,
+      "y": 80,
+      "config": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "module",
+      "out": "value",
+      "target": "get",
+      "in": "value"
+    },
+    {
+      "source": "get",
+      "out": "value",
+      "target": "call",
+      "in": "function"
+    },
+    {
+      "source": "call",
+      "out": "value",
+      "target": "out",
+      "in": "value"
+    }
+  ],
+  "checks": {
+    "out": {
+      "value": {
+        "count": 3,
+        "average": 80.67,
+        "top": "Chen"
+      }
+    }
+  },
+  "verified": true
+}

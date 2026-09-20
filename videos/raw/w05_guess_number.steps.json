@@ -1,0 +1,57 @@
+{
+  "slug": "w05_guess_number",
+  "raw_file": "batch02.mp4",
+  "meta_file": "batch02.meta.json",
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "start": 1789888395.036,
+      "end": 1789888395.874
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "start": 1789888395.884,
+      "end": 1789888396.791
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "start": 1789888396.801,
+      "end": 1789888397.699
+    },
+    {
+      "index": 3,
+      "action": "edge",
+      "start": 1789888397.711,
+      "end": 1789888398.674
+    },
+    {
+      "index": 4,
+      "action": "stdin",
+      "start": 1789888398.684,
+      "end": 1789888399.475
+    },
+    {
+      "index": 5,
+      "action": "run",
+      "start": 1789888399.485,
+      "end": 1789888400.017
+    },
+    {
+      "index": 6,
+      "action": "result",
+      "start": 1789888400.028,
+      "end": 1789888400.517
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "uiConstructed": true,
+    "expectedMatched": true,
+    "nodes": 2,
+    "edges": 1,
+    "status": "执行成功，所有可展示输出与预期一致"
+  }
+}

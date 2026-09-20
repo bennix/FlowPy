@@ -1,0 +1,63 @@
+{
+  "slug": "w05_loop_early_exit",
+  "raw_file": "batch02.mp4",
+  "meta_file": "batch02.meta.json",
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "start": 1789888400.526,
+      "end": 1789888401.349
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "start": 1789888401.358,
+      "end": 1789888402.258
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "start": 1789888402.268,
+      "end": 1789888403.166
+    },
+    {
+      "index": 3,
+      "action": "edge",
+      "start": 1789888403.176,
+      "end": 1789888404.183
+    },
+    {
+      "index": 4,
+      "action": "node",
+      "start": 1789888404.193,
+      "end": 1789888405.049
+    },
+    {
+      "index": 5,
+      "action": "edge",
+      "start": 1789888405.057,
+      "end": 1789888406.068
+    },
+    {
+      "index": 6,
+      "action": "run",
+      "start": 1789888406.078,
+      "end": 1789888406.634
+    },
+    {
+      "index": 7,
+      "action": "result",
+      "start": 1789888406.644,
+      "end": 1789888407.132
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "uiConstructed": true,
+    "expectedMatched": true,
+    "nodes": 3,
+    "edges": 2,
+    "status": "执行成功，所有可展示输出与预期一致"
+  }
+}

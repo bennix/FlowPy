@@ -1,0 +1,63 @@
+{
+  "slug": "w11_basic_pandas",
+  "raw_file": "batch05.mp4",
+  "meta_file": "batch05.meta.json",
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "start": 1789888668.288,
+      "end": 1789888669.115
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "start": 1789888669.125,
+      "end": 1789888670.016
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "start": 1789888670.026,
+      "end": 1789888670.908
+    },
+    {
+      "index": 3,
+      "action": "edge",
+      "start": 1789888670.919,
+      "end": 1789888671.911
+    },
+    {
+      "index": 4,
+      "action": "node",
+      "start": 1789888671.921,
+      "end": 1789888672.8
+    },
+    {
+      "index": 5,
+      "action": "edge",
+      "start": 1789888672.81,
+      "end": 1789888673.829
+    },
+    {
+      "index": 6,
+      "action": "run",
+      "start": 1789888673.839,
+      "end": 1789888674.734
+    },
+    {
+      "index": 7,
+      "action": "result",
+      "start": 1789888674.744,
+      "end": 1789888675.233
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "uiConstructed": true,
+    "expectedMatched": true,
+    "nodes": 3,
+    "edges": 2,
+    "status": "执行成功，所有可展示输出与预期一致"
+  }
+}

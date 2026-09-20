@@ -1,0 +1,63 @@
+{
+  "slug": "w07_lookup_comparison",
+  "raw_file": "batch03.mp4",
+  "meta_file": "batch03.meta.json",
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "start": 1789888473.453,
+      "end": 1789888474.356
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "start": 1789888474.385,
+      "end": 1789888475.462
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "start": 1789888475.505,
+      "end": 1789888476.525
+    },
+    {
+      "index": 3,
+      "action": "edge",
+      "start": 1789888476.555,
+      "end": 1789888477.57
+    },
+    {
+      "index": 4,
+      "action": "node",
+      "start": 1789888477.584,
+      "end": 1789888478.473
+    },
+    {
+      "index": 5,
+      "action": "edge",
+      "start": 1789888478.483,
+      "end": 1789888479.475
+    },
+    {
+      "index": 6,
+      "action": "run",
+      "start": 1789888479.484,
+      "end": 1789888480.041
+    },
+    {
+      "index": 7,
+      "action": "result",
+      "start": 1789888480.052,
+      "end": 1789888480.54
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "uiConstructed": true,
+    "expectedMatched": true,
+    "nodes": 3,
+    "edges": 2,
+    "status": "执行成功，所有可展示输出与预期一致"
+  }
+}

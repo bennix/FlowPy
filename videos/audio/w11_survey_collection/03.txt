@@ -1,0 +1,1 @@
+点击 Constant 的 value 输出，再点击 Python 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。

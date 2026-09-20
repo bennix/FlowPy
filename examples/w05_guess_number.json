@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "name": "猜数字游戏：难度与循环",
+  "week": 5,
+  "description": "easy / normal / hard；固定随机种子可重复测试，input() 输入猜测。",
+  "stdin": "normal\n10\n30\n21\n",
+  "nodes": [
+    {
+      "id": "game",
+      "type": "Python",
+      "title": "猜数字逻辑",
+      "x": 30,
+      "y": 80,
+      "config": {
+        "code": "import random\nlevels = {'easy': (20, 6), 'normal': (50, 5), 'hard': (100, 3)}\nlevel = input('难度 easy/normal/hard：').strip()\nif level not in levels:\n    raise ValueError('不支持的难度')\nupper, max_attempts = levels[level]\ntarget = random.Random(7).randint(1, upper)\nguesses, won = [], False\nfor attempt in range(max_attempts):\n    guess = int(input(f'第 {attempt + 1} 次猜测：'))\n    guesses.append(guess)\n    if guess == target:\n        won = True\n        print('猜对了！')\n        break\n    print('太小' if guess < target else '太大')\nresult = {'difficulty': level, 'won': won, 'attempts': len(guesses), 'target': target}"
+      }
+    },
+    {
+      "id": "out",
+      "type": "Output",
+      "title": "Output",
+      "x": 390,
+      "y": 80,
+      "config": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "game",
+      "out": "value",
+      "target": "out",
+      "in": "value"
+    }
+  ],
+  "checks": {
+    "out": {
+      "value": {
+        "difficulty": "normal",
+        "won": true,
+        "attempts": 3,
+        "target": 21
+      }
+    }
+  },
+  "verified": true
+}

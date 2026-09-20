@@ -1,0 +1,93 @@
+{
+  "slug": "w08_contacts_regex",
+  "raw_file": "batch03.mp4",
+  "meta_file": "batch03.meta.json",
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "start": 1789888480.55,
+      "end": 1789888481.39
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "start": 1789888481.4,
+      "end": 1789888482.291
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "start": 1789888482.301,
+      "end": 1789888483.198
+    },
+    {
+      "index": 3,
+      "action": "edge",
+      "start": 1789888483.236,
+      "end": 1789888484.241
+    },
+    {
+      "index": 4,
+      "action": "node",
+      "start": 1789888484.25,
+      "end": 1789888485.165
+    },
+    {
+      "index": 5,
+      "action": "edge",
+      "start": 1789888485.175,
+      "end": 1789888486.175
+    },
+    {
+      "index": 6,
+      "action": "node",
+      "start": 1789888486.186,
+      "end": 1789888487.083
+    },
+    {
+      "index": 7,
+      "action": "edge",
+      "start": 1789888487.092,
+      "end": 1789888488.132
+    },
+    {
+      "index": 8,
+      "action": "edge",
+      "start": 1789888488.142,
+      "end": 1789888489.123
+    },
+    {
+      "index": 9,
+      "action": "node",
+      "start": 1789888489.132,
+      "end": 1789888490.008
+    },
+    {
+      "index": 10,
+      "action": "edge",
+      "start": 1789888490.018,
+      "end": 1789888491.107
+    },
+    {
+      "index": 11,
+      "action": "run",
+      "start": 1789888491.117,
+      "end": 1789888491.701
+    },
+    {
+      "index": 12,
+      "action": "result",
+      "start": 1789888491.711,
+      "end": 1789888492.216
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "uiConstructed": true,
+    "expectedMatched": true,
+    "nodes": 5,
+    "edges": 5,
+    "status": "执行成功，所有可展示输出与预期一致"
+  }
+}

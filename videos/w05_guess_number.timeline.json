@@ -1,0 +1,112 @@
+{
+  "slug": "w05_guess_number",
+  "name": "猜数字游戏：难度与循环",
+  "voice": "zh-CN-XiaoxiaoNeural",
+  "tts": "Microsoft Edge TTS",
+  "recording": "ScreenCaptureKit dedicated FlowPy window; actual CUA UI interactions",
+  "width": 1920,
+  "height": 1080,
+  "duration": 80.788,
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "text": "这一节演示猜数字游戏：难度与循环。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。",
+      "source_start": 244.65708780288696,
+      "source_duration": 0.13000011444091797,
+      "start": 0.0,
+      "duration": 14.766666666666667,
+      "audio_start": 0.15,
+      "audio_end": 14.142000000000001,
+      "audio_duration": 13.992,
+      "speed_factor": 1.0
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "text": "添加 Python 节点。把处理逻辑写在这个节点里，输入由连线传入，结果写入 result。这样主画布保持简洁。",
+      "source_start": 244.79708790779114,
+      "source_duration": 0.9069998264312744,
+      "start": 14.766666666666667,
+      "duration": 12.333333333333334,
+      "audio_start": 14.916666666666668,
+      "audio_end": 26.48466666666667,
+      "audio_duration": 11.568,
+      "speed_factor": 2.5
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。",
+      "source_start": 245.71408796310425,
+      "source_duration": 0.8979997634887695,
+      "start": 27.1,
+      "duration": 8.366666666666667,
+      "audio_start": 27.25,
+      "audio_end": 34.858,
+      "audio_duration": 7.608,
+      "speed_factor": 2.5
+    },
+    {
+      "index": 3,
+      "action": "edge",
+      "text": "点击 Python 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。",
+      "source_start": 246.62408781051636,
+      "source_duration": 0.9630000591278076,
+      "start": 35.46666666666667,
+      "duration": 11.166666666666666,
+      "audio_start": 35.61666666666667,
+      "audio_end": 46.03266666666667,
+      "audio_duration": 10.416,
+      "speed_factor": 2.5
+    },
+    {
+      "index": 4,
+      "action": "stdin",
+      "text": "点击输入，逐行填写交互测试数据。程序每调用一次 input，就读取一行，便于重复验证同一个过程。",
+      "source_start": 247.59708786010742,
+      "source_duration": 0.7909998893737793,
+      "start": 46.63333333333333,
+      "duration": 11.5,
+      "audio_start": 46.78333333333333,
+      "audio_end": 57.51133333333333,
+      "audio_duration": 10.728,
+      "speed_factor": 2.5
+    },
+    {
+      "index": 5,
+      "action": "run",
+      "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。",
+      "source_start": 248.39808773994446,
+      "source_duration": 0.5320000648498535,
+      "start": 58.13333333333333,
+      "duration": 9.9,
+      "audio_start": 58.28333333333333,
+      "audio_end": 67.40333333333334,
+      "audio_duration": 9.12,
+      "speed_factor": 1.0
+    },
+    {
+      "index": 6,
+      "action": "result",
+      "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。",
+      "source_start": 248.9410879611969,
+      "source_duration": 0.4889998435974121,
+      "start": 68.03333333333333,
+      "duration": 12.733333333333333,
+      "audio_start": 68.18333333333334,
+      "audio_end": 80.15933333333334,
+      "audio_duration": 11.976,
+      "speed_factor": 1.0
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "uiConstructed": true,
+    "expectedMatched": true,
+    "nodes": 2,
+    "edges": 1,
+    "status": "执行成功，所有可展示输出与预期一致"
+  },
+  "next_action_after_audio": true
+}

@@ -1,0 +1,63 @@
+{
+  "slug": "w08_lottery",
+  "raw_file": "batch04.mp4",
+  "meta_file": "batch04.meta.json",
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "start": 1789888549.984,
+      "end": 1789888550.988
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "start": 1789888551.011,
+      "end": 1789888552.104
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "start": 1789888552.149,
+      "end": 1789888553.218
+    },
+    {
+      "index": 3,
+      "action": "edge",
+      "start": 1789888553.267,
+      "end": 1789888554.322
+    },
+    {
+      "index": 4,
+      "action": "node",
+      "start": 1789888554.362,
+      "end": 1789888555.586
+    },
+    {
+      "index": 5,
+      "action": "edge",
+      "start": 1789888555.608,
+      "end": 1789888556.709
+    },
+    {
+      "index": 6,
+      "action": "run",
+      "start": 1789888556.736,
+      "end": 1789888557.351
+    },
+    {
+      "index": 7,
+      "action": "result",
+      "start": 1789888557.368,
+      "end": 1789888557.884
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "uiConstructed": true,
+    "expectedMatched": true,
+    "nodes": 3,
+    "edges": 2,
+    "status": "执行成功，所有可展示输出与预期一致"
+  }
+}

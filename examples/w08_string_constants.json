@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "name": "标准库：string 与可重复随机字符串",
+  "week": 8,
+  "description": "string.ascii_letters / digits；教学用随机标识符，不作为密码。",
+  "stdin": "",
+  "nodes": [
+    {
+      "id": "logic",
+      "type": "Python",
+      "title": "Python",
+      "x": 30,
+      "y": 80,
+      "config": {
+        "code": "import string\nimport random\nrng = random.Random(12)\nalphabet = string.ascii_letters + string.digits\ntoken = ''.join(rng.choice(alphabet) for _ in range(12))\nresult = {'length': len(token), 'valid': all(c in alphabet for c in token)}"
+      }
+    },
+    {
+      "id": "out",
+      "type": "Output",
+      "title": "Output",
+      "x": 380,
+      "y": 80,
+      "config": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "logic",
+      "out": "value",
+      "target": "out",
+      "in": "value"
+    }
+  ],
+  "checks": {
+    "out": {
+      "value": {
+        "length": 12,
+        "valid": true
+      }
+    }
+  },
+  "verified": true
+}

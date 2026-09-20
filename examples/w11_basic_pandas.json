@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "name": "基础 pandas：表格清洗与筛选",
+  "week": 11,
+  "description": "DataFrame、dropna、astype、布尔筛选、列选择与 to_dict；无额外数据框架。",
+  "stdin": "",
+  "nodes": [
+    {
+      "id": "input",
+      "type": "Constant",
+      "title": "输入数据",
+      "x": 30,
+      "y": 80,
+      "config": {
+        "value": [
+          {
+            "name": "Alice",
+            "score": "85"
+          },
+          {
+            "name": "Bob",
+            "score": null
+          },
+          {
+            "name": "Chen",
+            "score": "59"
+          },
+          {
+            "name": "Dora",
+            "score": "92"
+          }
+        ]
+      }
+    },
+    {
+      "id": "logic",
+      "type": "Python",
+      "title": "Python 处理",
+      "x": 350,
+      "y": 80,
+      "config": {
+        "code": "import pandas as pd\nframe = pd.DataFrame(value)\nframe = frame.dropna(subset=['score']).copy()\nframe['score'] = frame['score'].astype(int)\npassed = frame.loc[frame['score'] >= 60, ['name','score']].sort_values('score',ascending=False)\nresult = {'records': passed.to_dict(orient='records'), 'count': len(passed), 'average': float(passed['score'].mean())}"
+      }
+    },
+    {
+      "id": "out",
+      "type": "Output",
+      "title": "结果",
+      "x": 700,
+      "y": 80,
+      "config": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "input",
+      "out": "value",
+      "target": "logic",
+      "in": "value"
+    },
+    {
+      "source": "logic",
+      "out": "value",
+      "target": "out",
+      "in": "value"
+    }
+  ],
+  "checks": {
+    "out": {
+      "value": {
+        "records": [
+          {
+            "name": "Dora",
+            "score": 92
+          },
+          {
+            "name": "Alice",
+            "score": 85
+          }
+        ],
+        "count": 2,
+        "average": 88.5
+      }
+    }
+  },
+  "verified": true
+}

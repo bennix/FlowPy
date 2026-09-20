@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "name": "模块导入与函数属性",
+  "week": 8,
+  "description": "ImportModule 导入 math.sqrt；函数引用通过连线传给 Call。",
+  "stdin": "",
+  "nodes": [
+    {
+      "id": "import",
+      "type": "ImportModule",
+      "title": "ImportModule",
+      "x": 30,
+      "y": 80,
+      "config": {
+        "module": "math",
+        "attribute": "sqrt"
+      }
+    },
+    {
+      "id": "call",
+      "type": "Call",
+      "title": "Call",
+      "x": 350,
+      "y": 80,
+      "config": {
+        "args": [
+          81
+        ]
+      }
+    },
+    {
+      "id": "out",
+      "type": "Output",
+      "title": "Output",
+      "x": 700,
+      "y": 80,
+      "config": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "import",
+      "out": "value",
+      "target": "call",
+      "in": "function"
+    },
+    {
+      "source": "call",
+      "out": "value",
+      "target": "out",
+      "in": "value"
+    }
+  ],
+  "checks": {
+    "out": {
+      "value": 9.0
+    }
+  },
+  "verified": true
+}

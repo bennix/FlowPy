@@ -1,0 +1,111 @@
+{
+  "slug": "001_starter",
+  "raw_file": "batch01.mp4",
+  "meta_file": "batch01.meta.json",
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "start": 1789888005.546,
+      "end": 1789888006.444
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "start": 1789888006.455,
+      "end": 1789888007.343
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "start": 1789888007.354,
+      "end": 1789888008.251
+    },
+    {
+      "index": 3,
+      "action": "node",
+      "start": 1789888008.261,
+      "end": 1789888009.233
+    },
+    {
+      "index": 4,
+      "action": "edge",
+      "start": 1789888009.245,
+      "end": 1789888010.276
+    },
+    {
+      "index": 5,
+      "action": "edge",
+      "start": 1789888010.292,
+      "end": 1789888011.298
+    },
+    {
+      "index": 6,
+      "action": "node",
+      "start": 1789888011.308,
+      "end": 1789888012.238
+    },
+    {
+      "index": 7,
+      "action": "edge",
+      "start": 1789888012.249,
+      "end": 1789888013.266
+    },
+    {
+      "index": 8,
+      "action": "edge",
+      "start": 1789888013.277,
+      "end": 1789888014.257
+    },
+    {
+      "index": 9,
+      "action": "node",
+      "start": 1789888014.267,
+      "end": 1789888015.274
+    },
+    {
+      "index": 10,
+      "action": "edge",
+      "start": 1789888015.285,
+      "end": 1789888016.294
+    },
+    {
+      "index": 11,
+      "action": "edge",
+      "start": 1789888016.304,
+      "end": 1789888017.278
+    },
+    {
+      "index": 12,
+      "action": "node",
+      "start": 1789888017.288,
+      "end": 1789888018.211
+    },
+    {
+      "index": 13,
+      "action": "edge",
+      "start": 1789888018.223,
+      "end": 1789888019.228
+    },
+    {
+      "index": 14,
+      "action": "run",
+      "start": 1789888019.238,
+      "end": 1789888019.846
+    },
+    {
+      "index": 15,
+      "action": "result",
+      "start": 1789888019.857,
+      "end": 1789888020.389
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "uiConstructed": true,
+    "expectedMatched": true,
+    "nodes": 6,
+    "edges": 7,
+    "status": "执行成功，所有可展示输出与预期一致"
+  }
+}

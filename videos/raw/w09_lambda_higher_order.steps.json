@@ -1,0 +1,99 @@
+{
+  "slug": "w09_lambda_higher_order",
+  "raw_file": "batch04.mp4",
+  "meta_file": "batch04.meta.json",
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "start": 1789888563.23,
+      "end": 1789888564.039
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "start": 1789888564.049,
+      "end": 1789888564.914
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "start": 1789888564.929,
+      "end": 1789888565.865
+    },
+    {
+      "index": 3,
+      "action": "node",
+      "start": 1789888565.874,
+      "end": 1789888566.757
+    },
+    {
+      "index": 4,
+      "action": "edge",
+      "start": 1789888566.766,
+      "end": 1789888567.767
+    },
+    {
+      "index": 5,
+      "action": "edge",
+      "start": 1789888567.782,
+      "end": 1789888568.772
+    },
+    {
+      "index": 6,
+      "action": "node",
+      "start": 1789888568.78,
+      "end": 1789888569.691
+    },
+    {
+      "index": 7,
+      "action": "node",
+      "start": 1789888569.7,
+      "end": 1789888570.582
+    },
+    {
+      "index": 8,
+      "action": "edge",
+      "start": 1789888570.592,
+      "end": 1789888571.59
+    },
+    {
+      "index": 9,
+      "action": "edge",
+      "start": 1789888571.6,
+      "end": 1789888572.624
+    },
+    {
+      "index": 10,
+      "action": "node",
+      "start": 1789888572.634,
+      "end": 1789888573.54
+    },
+    {
+      "index": 11,
+      "action": "edge",
+      "start": 1789888573.551,
+      "end": 1789888574.558
+    },
+    {
+      "index": 12,
+      "action": "run",
+      "start": 1789888574.568,
+      "end": 1789888575.157
+    },
+    {
+      "index": 13,
+      "action": "result",
+      "start": 1789888575.167,
+      "end": 1789888575.731
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "uiConstructed": true,
+    "expectedMatched": true,
+    "nodes": 6,
+    "edges": 5,
+    "status": "执行成功，所有可展示输出与预期一致"
+  }
+}

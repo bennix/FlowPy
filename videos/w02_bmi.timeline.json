@@ -1,0 +1,128 @@
+{
+  "slug": "w02_bmi",
+  "name": "BMI 计算器",
+  "voice": "zh-CN-XiaoxiaoNeural",
+  "tts": "Microsoft Edge TTS",
+  "recording": "ScreenCaptureKit dedicated FlowPy window; actual CUA UI interactions",
+  "width": 1920,
+  "height": 1080,
+  "duration": 92.921333,
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "text": "这一节演示BMI 计算器。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。",
+      "source_start": 14.016915082931519,
+      "source_duration": 0.13000011444091797,
+      "start": 0.0,
+      "duration": 13.8,
+      "audio_start": 0.15,
+      "audio_end": 13.182,
+      "audio_duration": 13.032,
+      "speed_factor": 1.0
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "text": "添加 Constant 节点。在右侧填入本例的数据。常量可以是数字、字符串、列表或字典，使用合法的 JSON 格式。",
+      "source_start": 14.157915115356445,
+      "source_duration": 0.8259999752044678,
+      "start": 13.8,
+      "duration": 13.366666666666667,
+      "audio_start": 13.950000000000001,
+      "audio_end": 26.55,
+      "audio_duration": 12.6,
+      "speed_factor": 2.5
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "text": "添加 Python 节点。把处理逻辑写在这个节点里，输入由连线传入，结果写入 result。这样主画布保持简洁。",
+      "source_start": 14.99991512298584,
+      "source_duration": 0.7480001449584961,
+      "start": 27.166666666666668,
+      "duration": 12.333333333333334,
+      "audio_start": 27.316666666666666,
+      "audio_end": 38.88466666666667,
+      "audio_duration": 11.568,
+      "speed_factor": 2.5
+    },
+    {
+      "index": 3,
+      "action": "edge",
+      "text": "点击 Constant 的 value 输出，再点击 Python 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。",
+      "source_start": 15.759915113449097,
+      "source_duration": 0.9309999942779541,
+      "start": 39.5,
+      "duration": 11.233333333333333,
+      "audio_start": 39.65,
+      "audio_end": 50.114,
+      "audio_duration": 10.464,
+      "speed_factor": 2.5
+    },
+    {
+      "index": 4,
+      "action": "node",
+      "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。",
+      "source_start": 43.216915130615234,
+      "source_duration": 0.7409999370574951,
+      "start": 50.733333333333334,
+      "duration": 8.366666666666667,
+      "audio_start": 50.88333333333333,
+      "audio_end": 58.49133333333333,
+      "audio_duration": 7.608,
+      "speed_factor": 2.5
+    },
+    {
+      "index": 5,
+      "action": "edge",
+      "text": "点击 Python 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。",
+      "source_start": 43.96991515159607,
+      "source_duration": 0.8629999160766602,
+      "start": 59.1,
+      "duration": 11.166666666666666,
+      "audio_start": 59.25,
+      "audio_end": 69.666,
+      "audio_duration": 10.416,
+      "speed_factor": 2.5
+    },
+    {
+      "index": 6,
+      "action": "run",
+      "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。",
+      "source_start": 44.84691524505615,
+      "source_duration": 0.42299985885620117,
+      "start": 70.26666666666667,
+      "duration": 9.9,
+      "audio_start": 70.41666666666667,
+      "audio_end": 79.53666666666668,
+      "audio_duration": 9.12,
+      "speed_factor": 1.0
+    },
+    {
+      "index": 7,
+      "action": "result",
+      "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。",
+      "source_start": 45.28091526031494,
+      "source_duration": 0.35199999809265137,
+      "start": 80.16666666666667,
+      "duration": 12.733333333333333,
+      "audio_start": 80.31666666666668,
+      "audio_end": 92.29266666666668,
+      "audio_duration": 11.976,
+      "speed_factor": 1.0
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "nodes": 3,
+    "edges": 2,
+    "expectedMatched": true,
+    "result": {
+      "bmi": 22.86,
+      "category": "正常"
+    },
+    "uiConstructed": true
+  },
+  "next_action_after_audio": true
+}

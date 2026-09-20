@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "name": "问卷收集：校验、去重与保存",
+  "week": 11,
+  "description": "有效记录写入 artifacts/survey.csv 与 survey.json；保留错误报告。",
+  "stdin": "",
+  "nodes": [
+    {
+      "id": "input",
+      "type": "Constant",
+      "title": "输入数据",
+      "x": 30,
+      "y": 80,
+      "config": {
+        "value": [
+          {
+            "name": "Alice",
+            "age": "20",
+            "rating": "5"
+          },
+          {
+            "name": "Bob",
+            "age": "-2",
+            "rating": "4"
+          },
+          {
+            "name": "Chen",
+            "age": "22",
+            "rating": "3"
+          },
+          {
+            "name": "Alice",
+            "age": "20",
+            "rating": "5"
+          }
+        ]
+      }
+    },
+    {
+      "id": "logic",
+      "type": "Python",
+      "title": "Python 处理",
+      "x": 350,
+      "y": 80,
+      "config": {
+        "code": "import csv, json\nfrom pathlib import Path\naccepted, errors, seen = [], [], set()\nfor index, row in enumerate(value):\n    try:\n        name = row['name'].strip()\n        age, rating = int(row['age']), int(row['rating'])\n        if not name or not 0 < age < 130 or not 1 <= rating <= 5:\n            raise ValueError('字段超出有效范围')\n        if name in seen:\n            raise ValueError('重复提交')\n        seen.add(name)\n        accepted.append({'name':name,'age':age,'rating':rating})\n    except (ValueError, KeyError, TypeError) as exc:\n        errors.append({'row':index+1,'error':str(exc)})\noutput = Path('artifacts')\noutput.mkdir(exist_ok=True)\nwith (output/'survey.csv').open('w',newline='',encoding='utf-8') as file:\n    writer = csv.DictWriter(file,fieldnames=['name','age','rating'])\n    writer.writeheader()\n    writer.writerows(accepted)\n(output/'survey.json').write_text(json.dumps(accepted,ensure_ascii=False,indent=2),encoding='utf-8')\nresult = {'accepted':len(accepted),'rejected':len(errors),'records':accepted,'errors':errors}"
+      }
+    },
+    {
+      "id": "out",
+      "type": "Output",
+      "title": "结果",
+      "x": 700,
+      "y": 80,
+      "config": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "input",
+      "out": "value",
+      "target": "logic",
+      "in": "value"
+    },
+    {
+      "source": "logic",
+      "out": "value",
+      "target": "out",
+      "in": "value"
+    }
+  ],
+  "checks": {
+    "out": {
+      "value": {
+        "accepted": 2,
+        "rejected": 2,
+        "records": [
+          {
+            "name": "Alice",
+            "age": 20,
+            "rating": 5
+          },
+          {
+            "name": "Chen",
+            "age": 22,
+            "rating": 3
+          }
+        ],
+        "errors": [
+          {
+            "row": 2,
+            "error": "字段超出有效范围"
+          },
+          {
+            "row": 4,
+            "error": "重复提交"
+          }
+        ]
+      }
+    }
+  },
+  "verified": true
+}

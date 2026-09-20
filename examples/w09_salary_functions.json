@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "name": "薪资计算器：完整函数签名",
+  "week": 9,
+  "description": "位置限定参数、*bonuses、默认值、关键字参数和 **metadata。",
+  "stdin": "",
+  "nodes": [
+    {
+      "id": "salary",
+      "type": "Function",
+      "title": "Function",
+      "x": 30,
+      "y": 80,
+      "config": {
+        "name": "salary",
+        "code": "def salary(base, /, *bonuses, tax_rate=0.1, allowance=0, **metadata):\n    if base < 0 or not 0 <= tax_rate <= 1:\n        raise ValueError('薪资或税率无效')\n    gross = base + sum(bonuses) + allowance\n    return {'gross': round(gross, 2), 'net': round(gross * (1-tax_rate), 2), 'employee': metadata.get('employee', 'anonymous')}"
+      }
+    },
+    {
+      "id": "args",
+      "type": "Constant",
+      "title": "Constant",
+      "x": 30,
+      "y": 380,
+      "config": {
+        "value": [
+          10000,
+          1000,
+          500
+        ]
+      }
+    },
+    {
+      "id": "call",
+      "type": "Call",
+      "title": "Call",
+      "x": 400,
+      "y": 80,
+      "config": {
+        "kwargs": {
+          "tax_rate": 0.1,
+          "allowance": 200,
+          "employee": "Alice"
+        }
+      }
+    },
+    {
+      "id": "out",
+      "type": "Output",
+      "title": "Output",
+      "x": 760,
+      "y": 80,
+      "config": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "salary",
+      "out": "function",
+      "target": "call",
+      "in": "function"
+    },
+    {
+      "source": "args",
+      "out": "value",
+      "target": "call",
+      "in": "args"
+    },
+    {
+      "source": "call",
+      "out": "value",
+      "target": "out",
+      "in": "value"
+    }
+  ],
+  "checks": {
+    "out": {
+      "value": {
+        "gross": 11700,
+        "net": 10530.0,
+        "employee": "Alice"
+      }
+    }
+  },
+  "verified": true
+}

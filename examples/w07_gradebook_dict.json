@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "name": "学生成绩管理：字典与集合",
+  "week": 7,
+  "description": "字典增删改查、集合交并差以及重复值消除。",
+  "stdin": "",
+  "nodes": [
+    {
+      "id": "input",
+      "type": "Constant",
+      "title": "输入数据",
+      "x": 30,
+      "y": 80,
+      "config": {
+        "value": {
+          "Alice": 85,
+          "Bob": 59,
+          "Chen": 92
+        }
+      }
+    },
+    {
+      "id": "logic",
+      "type": "Python",
+      "title": "Python 处理",
+      "x": 350,
+      "y": 80,
+      "config": {
+        "code": "scores = dict(value)\nscores.update(Bob=65, Dora=78)\ndel scores['Dora']\npassed = {name for name, score in scores.items() if score >= 60}\nregistered = {'Alice', 'Bob', 'Chen', 'Dora'}\nresult = {'scores': scores, 'passed': sorted(passed), 'missing': sorted(registered-set(scores)), 'shared': sorted(passed & registered), 'unique_scores': sorted(set(scores.values()))}"
+      }
+    },
+    {
+      "id": "out",
+      "type": "Output",
+      "title": "结果",
+      "x": 700,
+      "y": 80,
+      "config": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "input",
+      "out": "value",
+      "target": "logic",
+      "in": "value"
+    },
+    {
+      "source": "logic",
+      "out": "value",
+      "target": "out",
+      "in": "value"
+    }
+  ],
+  "checks": {
+    "out": {
+      "value": {
+        "scores": {
+          "Alice": 85,
+          "Bob": 65,
+          "Chen": 92
+        },
+        "passed": [
+          "Alice",
+          "Bob",
+          "Chen"
+        ],
+        "missing": [
+          "Dora"
+        ],
+        "shared": [
+          "Alice",
+          "Bob",
+          "Chen"
+        ],
+        "unique_scores": [
+          65,
+          85,
+          92
+        ]
+      }
+    }
+  },
+  "verified": true
+}

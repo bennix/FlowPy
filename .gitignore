@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+artifacts/
+_site/
+videos/segments/
+videos/raw/*.mp4
+videos/raw/*.stop
+videos/record-window
+videos/list-windows
+videos/render-*.log
+reports/latest-check.log

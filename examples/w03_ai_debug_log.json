@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "name": "AI 调试日志：三次失败与修正",
+  "week": 3,
+  "description": "重现语法错误、幻觉函数与逻辑错误，验证修正后的结果。",
+  "stdin": "",
+  "nodes": [
+    {
+      "id": "input",
+      "type": "Constant",
+      "title": "输入数据",
+      "x": 30,
+      "y": 80,
+      "config": {
+        "value": null
+      }
+    },
+    {
+      "id": "logic",
+      "type": "Python",
+      "title": "Python 处理",
+      "x": 350,
+      "y": 80,
+      "config": {
+        "code": "cases = [\n    {'kind':'SyntaxError', 'bad':'result = (1 +', 'fixed':'result = 1 + 2', 'expected':3},\n    {'kind':'AttributeError', 'bad':'import math\\nresult = math.square(4)', 'fixed':'result = 4 ** 2', 'expected':16},\n    {'kind':'AssertionError', 'bad':'result = 70 / 1.75', 'fixed':'result = round(70 / 1.75 ** 2, 2)', 'expected':22.86},\n]\nlogs = []\nfor case in cases:\n    try:\n        namespace = {}\n        exec(compile(case['bad'], '<AI proposal>', 'exec'), namespace)\n        assert namespace['result'] == case['expected'], '公式错误'\n    except (SyntaxError, AttributeError, AssertionError) as exc:\n        detected = type(exc).__name__\n        print(f'发现 {detected}，开始验证修正')\n    else:\n        raise AssertionError('预设错误未被发现')\n    namespace = {}\n    exec(compile(case['fixed'], '<corrected>', 'exec'), namespace)\n    assert namespace['result'] == case['expected']\n    logs.append({'failure': detected, 'fixed_result': namespace['result'], 'verified': True})\nresult = logs"
+      }
+    },
+    {
+      "id": "out",
+      "type": "Output",
+      "title": "结果",
+      "x": 700,
+      "y": 80,
+      "config": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "input",
+      "out": "value",
+      "target": "logic",
+      "in": "value"
+    },
+    {
+      "source": "logic",
+      "out": "value",
+      "target": "out",
+      "in": "value"
+    }
+  ],
+  "checks": {
+    "out": {
+      "value": [
+        {
+          "failure": "SyntaxError",
+          "fixed_result": 3,
+          "verified": true
+        },
+        {
+          "failure": "AttributeError",
+          "fixed_result": 16,
+          "verified": true
+        },
+        {
+          "failure": "AssertionError",
+          "fixed_result": 22.86,
+          "verified": true
+        }
+      ]
+    }
+  },
+  "verified": true
+}

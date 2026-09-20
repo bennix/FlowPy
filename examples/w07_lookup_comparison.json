@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "name": "列表和字典的查找对比",
+  "week": 7,
+  "description": "同一批查询比较线性查找与字典查找，断言结果一致；不把耗时当正确性。",
+  "stdin": "",
+  "nodes": [
+    {
+      "id": "input",
+      "type": "Constant",
+      "title": "输入数据",
+      "x": 30,
+      "y": 80,
+      "config": {
+        "value": {
+          "count": 2000,
+          "queries": [
+            3,
+            100,
+            1999,
+            2500
+          ]
+        }
+      }
+    },
+    {
+      "id": "logic",
+      "type": "Python",
+      "title": "Python 处理",
+      "x": 350,
+      "y": 80,
+      "config": {
+        "code": "records = [(i, i * 10) for i in range(value['count'])]\nindex = dict(records)\nlist_result = [next((score for key, score in records if key == q), None) for q in value['queries']]\ndict_result = [index.get(q) for q in value['queries']]\nassert list_result == dict_result\nresult = {'same': True, 'results': dict_result, 'rows': len(records)}"
+      }
+    },
+    {
+      "id": "out",
+      "type": "Output",
+      "title": "结果",
+      "x": 700,
+      "y": 80,
+      "config": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "input",
+      "out": "value",
+      "target": "logic",
+      "in": "value"
+    },
+    {
+      "source": "logic",
+      "out": "value",
+      "target": "out",
+      "in": "value"
+    }
+  ],
+  "checks": {
+    "out": {
+      "value": {
+        "same": true,
+        "results": [
+          30,
+          1000,
+          19990,
+          null
+        ],
+        "rows": 2000
+      }
+    }
+  },
+  "verified": true
+}

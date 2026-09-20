@@ -1,0 +1,1 @@
+点击 RegexFindall 的 matches 输出，再点击 Map 的 items 输入，建立这条数据连线。下游现在直接使用上游结果。

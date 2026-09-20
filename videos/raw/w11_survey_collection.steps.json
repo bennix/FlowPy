@@ -1,0 +1,63 @@
+{
+  "slug": "w11_survey_collection",
+  "raw_file": "batch05.mp4",
+  "meta_file": "batch05.meta.json",
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "start": 1789888681.883,
+      "end": 1789888682.7
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "start": 1789888682.71,
+      "end": 1789888683.6
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "start": 1789888683.609,
+      "end": 1789888684.508
+    },
+    {
+      "index": 3,
+      "action": "edge",
+      "start": 1789888684.517,
+      "end": 1789888685.5
+    },
+    {
+      "index": 4,
+      "action": "node",
+      "start": 1789888685.51,
+      "end": 1789888686.399
+    },
+    {
+      "index": 5,
+      "action": "edge",
+      "start": 1789888686.409,
+      "end": 1789888687.408
+    },
+    {
+      "index": 6,
+      "action": "run",
+      "start": 1789888687.418,
+      "end": 1789888687.991
+    },
+    {
+      "index": 7,
+      "action": "result",
+      "start": 1789888688.001,
+      "end": 1789888688.512
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "uiConstructed": true,
+    "expectedMatched": true,
+    "nodes": 3,
+    "edges": 2,
+    "status": "执行成功，所有可展示输出与预期一致"
+  }
+}

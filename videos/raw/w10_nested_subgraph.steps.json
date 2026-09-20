@@ -1,0 +1,105 @@
+{
+  "slug": "w10_nested_subgraph",
+  "raw_file": "batch05.mp4",
+  "meta_file": "batch05.meta.json",
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "start": 1789888655.497,
+      "end": 1789888656.333
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "start": 1789888656.342,
+      "end": 1789888657.244
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "start": 1789888657.256,
+      "end": 1789888658.125
+    },
+    {
+      "index": 3,
+      "action": "enter",
+      "start": 1789888658.134,
+      "end": 1789888658.904
+    },
+    {
+      "index": 4,
+      "action": "node",
+      "start": 1789888658.914,
+      "end": 1789888659.809
+    },
+    {
+      "index": 5,
+      "action": "node",
+      "start": 1789888659.818,
+      "end": 1789888660.7
+    },
+    {
+      "index": 6,
+      "action": "edge",
+      "start": 1789888660.709,
+      "end": 1789888661.692
+    },
+    {
+      "index": 7,
+      "action": "node",
+      "start": 1789888661.701,
+      "end": 1789888662.583
+    },
+    {
+      "index": 8,
+      "action": "edge",
+      "start": 1789888662.592,
+      "end": 1789888663.577
+    },
+    {
+      "index": 9,
+      "action": "leave",
+      "start": 1789888663.587,
+      "end": 1789888664.331
+    },
+    {
+      "index": 10,
+      "action": "edge",
+      "start": 1789888664.342,
+      "end": 1789888665.316
+    },
+    {
+      "index": 11,
+      "action": "node",
+      "start": 1789888665.325,
+      "end": 1789888666.191
+    },
+    {
+      "index": 12,
+      "action": "edge",
+      "start": 1789888666.2,
+      "end": 1789888667.207
+    },
+    {
+      "index": 13,
+      "action": "run",
+      "start": 1789888667.216,
+      "end": 1789888667.784
+    },
+    {
+      "index": 14,
+      "action": "result",
+      "start": 1789888667.792,
+      "end": 1789888668.278
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "uiConstructed": true,
+    "expectedMatched": true,
+    "nodes": 3,
+    "edges": 2,
+    "status": "执行成功，所有可展示输出与预期一致"
+  }
+}

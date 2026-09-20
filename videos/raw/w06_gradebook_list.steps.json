@@ -1,0 +1,63 @@
+{
+  "slug": "w06_gradebook_list",
+  "raw_file": "batch03.mp4",
+  "meta_file": "batch03.meta.json",
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "start": 1789888457.129,
+      "end": 1789888458.097
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "start": 1789888458.159,
+      "end": 1789888459.16
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "start": 1789888459.183,
+      "end": 1789888460.129
+    },
+    {
+      "index": 3,
+      "action": "edge",
+      "start": 1789888460.14,
+      "end": 1789888461.237
+    },
+    {
+      "index": 4,
+      "action": "node",
+      "start": 1789888461.297,
+      "end": 1789888462.449
+    },
+    {
+      "index": 5,
+      "action": "edge",
+      "start": 1789888462.474,
+      "end": 1789888463.621
+    },
+    {
+      "index": 6,
+      "action": "run",
+      "start": 1789888463.671,
+      "end": 1789888464.416
+    },
+    {
+      "index": 7,
+      "action": "result",
+      "start": 1789888464.467,
+      "end": 1789888465.246
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "uiConstructed": true,
+    "expectedMatched": true,
+    "nodes": 3,
+    "edges": 2,
+    "status": "执行成功，所有可展示输出与预期一致"
+  }
+}

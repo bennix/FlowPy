@@ -1,0 +1,112 @@
+{
+  "slug": "w02_interactive",
+  "name": "交互式 BMI / input()",
+  "voice": "zh-CN-XiaoxiaoNeural",
+  "tts": "Microsoft Edge TTS",
+  "recording": "ScreenCaptureKit dedicated FlowPy window; actual CUA UI interactions",
+  "width": 1920,
+  "height": 1080,
+  "duration": 80.321333,
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "text": "这一节演示交互式 BMI / input()。现在画布完全为空，没有节点，也没有连线。我们从节点库开始，一步一步搭建，最后运行验证。",
+      "source_start": 206.54408764839172,
+      "source_duration": 0.13000011444091797,
+      "start": 0.0,
+      "duration": 14.3,
+      "audio_start": 0.15,
+      "audio_end": 13.686,
+      "audio_duration": 13.536,
+      "speed_factor": 1.0
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "text": "添加 Python 节点。把处理逻辑写在这个节点里，输入由连线传入，结果写入 result。这样主画布保持简洁。",
+      "source_start": 206.68308782577515,
+      "source_duration": 0.9950001239776611,
+      "start": 14.3,
+      "duration": 12.333333333333334,
+      "audio_start": 14.450000000000001,
+      "audio_end": 26.018,
+      "audio_duration": 11.568,
+      "speed_factor": 2.5
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "text": "添加 Output 节点。这个节点收集最终结果，运行后可以在底部查看。",
+      "source_start": 207.69008779525757,
+      "source_duration": 0.875,
+      "start": 26.633333333333333,
+      "duration": 8.366666666666667,
+      "audio_start": 26.78333333333333,
+      "audio_end": 34.39133333333333,
+      "audio_duration": 7.608,
+      "speed_factor": 2.5
+    },
+    {
+      "index": 3,
+      "action": "edge",
+      "text": "点击 Python 的 value 输出，再点击 Output 的 value 输入，建立这条数据连线。下游现在直接使用上游结果。",
+      "source_start": 208.57508778572083,
+      "source_duration": 0.9660000801086426,
+      "start": 35.0,
+      "duration": 11.166666666666666,
+      "audio_start": 35.15,
+      "audio_end": 45.566,
+      "audio_duration": 10.416,
+      "speed_factor": 2.5
+    },
+    {
+      "index": 4,
+      "action": "stdin",
+      "text": "点击输入，逐行填写交互测试数据。程序每调用一次 input，就读取一行，便于重复验证同一个过程。",
+      "source_start": 209.5530879497528,
+      "source_duration": 0.7799999713897705,
+      "start": 46.166666666666664,
+      "duration": 11.5,
+      "audio_start": 46.31666666666666,
+      "audio_end": 57.044666666666664,
+      "audio_duration": 10.728,
+      "speed_factor": 2.5
+    },
+    {
+      "index": 5,
+      "action": "run",
+      "text": "节点和连线已经搭建完成。现在点击运行工作流，由真实的 Python 执行所有激活节点。",
+      "source_start": 210.34308791160583,
+      "source_duration": 0.5390000343322754,
+      "start": 57.666666666666664,
+      "duration": 9.9,
+      "audio_start": 57.81666666666666,
+      "audio_end": 66.93666666666667,
+      "audio_duration": 9.12,
+      "speed_factor": 1.0
+    },
+    {
+      "index": 6,
+      "action": "result",
+      "text": "运行成功。底部显示每个节点的实际输出，结果已与本例预期值核对。这个例子从空白画布开始，现已完整跑通。",
+      "source_start": 210.89208793640137,
+      "source_duration": 0.4909999370574951,
+      "start": 67.56666666666666,
+      "duration": 12.733333333333333,
+      "audio_start": 67.71666666666667,
+      "audio_end": 79.69266666666667,
+      "audio_duration": 11.976,
+      "speed_factor": 1.0
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "uiConstructed": true,
+    "expectedMatched": true,
+    "nodes": 2,
+    "edges": 1,
+    "status": "执行成功，所有可展示输出与预期一致"
+  },
+  "next_action_after_audio": true
+}

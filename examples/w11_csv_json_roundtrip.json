@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "name": "文件读写：CSV 与 JSON",
+  "week": 11,
+  "description": "用 tempfile 在临时目录真实写入并读回 Unicode CSV/JSON，验证内容一致。",
+  "stdin": "",
+  "nodes": [
+    {
+      "id": "input",
+      "type": "Constant",
+      "title": "输入数据",
+      "x": 30,
+      "y": 80,
+      "config": {
+        "value": [
+          {
+            "name": "小明",
+            "score": 85
+          },
+          {
+            "name": "小红",
+            "score": 92
+          }
+        ]
+      }
+    },
+    {
+      "id": "logic",
+      "type": "Python",
+      "title": "Python 处理",
+      "x": 350,
+      "y": 80,
+      "config": {
+        "code": "import csv, json, tempfile\nfrom pathlib import Path\nwith tempfile.TemporaryDirectory() as folder:\n    folder = Path(folder)\n    csv_path, json_path = folder/'scores.csv', folder/'scores.json'\n    with csv_path.open('w', newline='', encoding='utf-8') as file:\n        writer = csv.DictWriter(file, fieldnames=['name','score'])\n        writer.writeheader()\n        writer.writerows(value)\n    with csv_path.open(encoding='utf-8', newline='') as file:\n        rows = [{'name': row['name'], 'score': int(row['score'])} for row in csv.DictReader(file)]\n    json_path.write_text(json.dumps(rows, ensure_ascii=False), encoding='utf-8')\n    restored = json.loads(json_path.read_text(encoding='utf-8'))\n    assert restored == value\n    result = {'rows': restored, 'roundtrip': True}"
+      }
+    },
+    {
+      "id": "out",
+      "type": "Output",
+      "title": "结果",
+      "x": 700,
+      "y": 80,
+      "config": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "input",
+      "out": "value",
+      "target": "logic",
+      "in": "value"
+    },
+    {
+      "source": "logic",
+      "out": "value",
+      "target": "out",
+      "in": "value"
+    }
+  ],
+  "checks": {
+    "out": {
+      "value": {
+        "rows": [
+          {
+            "name": "小明",
+            "score": 85
+          },
+          {
+            "name": "小红",
+            "score": 92
+          }
+        ],
+        "roundtrip": true
+      }
+    }
+  },
+  "verified": true
+}

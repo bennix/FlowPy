@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "name": "循环中的 continue / break",
+  "week": 5,
+  "description": "Loop 显式持有 item、index、acc；忽略空行并遇 END 停止。",
+  "stdin": "",
+  "nodes": [
+    {
+      "id": "rows",
+      "type": "Constant",
+      "title": "Constant",
+      "x": 30,
+      "y": 80,
+      "config": {
+        "value": [
+          "10",
+          "",
+          "20",
+          "END",
+          "999"
+        ]
+      }
+    },
+    {
+      "id": "loop",
+      "type": "Loop",
+      "title": "Loop",
+      "x": 350,
+      "y": 80,
+      "config": {
+        "code": "if item == \"END\":\n    break\nif not item:\n    continue\nresult = int(item)"
+      }
+    },
+    {
+      "id": "out",
+      "type": "Output",
+      "title": "Output",
+      "x": 700,
+      "y": 80,
+      "config": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "rows",
+      "out": "value",
+      "target": "loop",
+      "in": "items"
+    },
+    {
+      "source": "loop",
+      "out": "items",
+      "target": "out",
+      "in": "value"
+    }
+  ],
+  "checks": {
+    "out": {
+      "value": [
+        10,
+        20
+      ]
+    }
+  },
+  "verified": true
+}

@@ -1,0 +1,184 @@
+[
+  {
+    "slug": "001_starter",
+    "name": "订单解析工作流",
+    "duration": 181.154667,
+    "steps": 16,
+    "verified": true
+  },
+  {
+    "slug": "002_starter",
+    "name": "批量抽取与匿名函数",
+    "duration": 129.921333,
+    "steps": 12,
+    "verified": true
+  },
+  {
+    "slug": "003_starter",
+    "name": "函数定义与灵活调用",
+    "duration": 114.454667,
+    "steps": 10,
+    "verified": true
+  },
+  {
+    "slug": "004_starter",
+    "name": "正则谓词过滤",
+    "duration": 111.721333,
+    "steps": 10,
+    "verified": true
+  },
+  {
+    "slug": "w02_bmi",
+    "name": "BMI 计算器",
+    "duration": 92.921333,
+    "steps": 8,
+    "verified": true
+  },
+  {
+    "slug": "w02_interactive",
+    "name": "交互式 BMI / input()",
+    "duration": 80.321333,
+    "steps": 7,
+    "verified": true
+  },
+  {
+    "slug": "w02_types_operators",
+    "name": "基础类型与运算符",
+    "duration": 93.288,
+    "steps": 8,
+    "verified": true
+  },
+  {
+    "slug": "w03_ai_debug_log",
+    "name": "AI 调试日志：三次失败与修正",
+    "duration": 94.654667,
+    "steps": 8,
+    "verified": true
+  },
+  {
+    "slug": "w04_exceptions_logs",
+    "name": "异常捕获与打印调试",
+    "duration": 115.354667,
+    "steps": 10,
+    "verified": true
+  },
+  {
+    "slug": "w05_guess_number",
+    "name": "猜数字游戏：难度与循环",
+    "duration": 80.788,
+    "steps": 7,
+    "verified": true
+  },
+  {
+    "slug": "w05_loop_early_exit",
+    "name": "循环中的 continue / break",
+    "duration": 91.688,
+    "steps": 8,
+    "verified": true
+  },
+  {
+    "slug": "w06_gradebook_list",
+    "name": "学生成绩管理：列表与元组",
+    "duration": 94.054667,
+    "steps": 8,
+    "verified": true
+  },
+  {
+    "slug": "w07_gradebook_dict",
+    "name": "学生成绩管理：字典与集合",
+    "duration": 94.088,
+    "steps": 8,
+    "verified": true
+  },
+  {
+    "slug": "w07_lookup_comparison",
+    "name": "列表和字典的查找对比",
+    "duration": 93.488,
+    "steps": 8,
+    "verified": true
+  },
+  {
+    "slug": "w08_contacts_regex",
+    "name": "标准库：提取邮箱与手机号",
+    "duration": 144.654667,
+    "steps": 13,
+    "verified": true
+  },
+  {
+    "slug": "w08_import_math",
+    "name": "模块导入与函数属性",
+    "duration": 87.088,
+    "steps": 8,
+    "verified": true
+  },
+  {
+    "slug": "w08_loan",
+    "name": "标准库：等额本息月供",
+    "duration": 93.554667,
+    "steps": 8,
+    "verified": true
+  },
+  {
+    "slug": "w08_lottery",
+    "name": "标准库：双色球号码",
+    "duration": 93.488,
+    "steps": 8,
+    "verified": true
+  },
+  {
+    "slug": "w08_string_constants",
+    "name": "标准库：string 与可重复随机字符串",
+    "duration": 70.254667,
+    "steps": 6,
+    "verified": true
+  },
+  {
+    "slug": "w09_lambda_higher_order",
+    "name": "Lambda 与高阶 map / filter",
+    "duration": 154.321333,
+    "steps": 14,
+    "verified": true
+  },
+  {
+    "slug": "w09_salary_functions",
+    "name": "薪资计算器：完整函数签名",
+    "duration": 115.288,
+    "steps": 10,
+    "verified": true
+  },
+  {
+    "slug": "w10_modular_gradebook",
+    "name": "模块化重构：成绩管理",
+    "duration": 108.854667,
+    "steps": 10,
+    "verified": true
+  },
+  {
+    "slug": "w10_nested_subgraph",
+    "name": "模块化重构：可视化子图",
+    "duration": 163.554667,
+    "steps": 15,
+    "verified": true
+  },
+  {
+    "slug": "w11_basic_pandas",
+    "name": "基础 pandas：表格清洗与筛选",
+    "duration": 94.421333,
+    "steps": 8,
+    "verified": true
+  },
+  {
+    "slug": "w11_csv_json_roundtrip",
+    "name": "文件读写：CSV 与 JSON",
+    "duration": 94.521333,
+    "steps": 8,
+    "verified": true
+  },
+  {
+    "slug": "w11_survey_collection",
+    "name": "问卷收集：校验、去重与保存",
+    "duration": 94.421333,
+    "steps": 8,
+    "verified": true
+  }
+]

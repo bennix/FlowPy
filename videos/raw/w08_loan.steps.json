@@ -1,0 +1,63 @@
+{
+  "slug": "w08_loan",
+  "raw_file": "batch04.mp4",
+  "meta_file": "batch04.meta.json",
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "start": 1789888542.268,
+      "end": 1789888543.256
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "start": 1789888543.275,
+      "end": 1789888544.165
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "start": 1789888544.175,
+      "end": 1789888545.149
+    },
+    {
+      "index": 3,
+      "action": "edge",
+      "start": 1789888545.193,
+      "end": 1789888546.305
+    },
+    {
+      "index": 4,
+      "action": "node",
+      "start": 1789888546.331,
+      "end": 1789888547.658
+    },
+    {
+      "index": 5,
+      "action": "edge",
+      "start": 1789888547.695,
+      "end": 1789888548.749
+    },
+    {
+      "index": 6,
+      "action": "run",
+      "start": 1789888548.775,
+      "end": 1789888549.486
+    },
+    {
+      "index": 7,
+      "action": "result",
+      "start": 1789888549.499,
+      "end": 1789888549.975
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "uiConstructed": true,
+    "expectedMatched": true,
+    "nodes": 3,
+    "edges": 2,
+    "status": "执行成功，所有可展示输出与预期一致"
+  }
+}

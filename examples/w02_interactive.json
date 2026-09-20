@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "name": "交互式 BMI / input()",
+  "week": 2,
+  "description": "使用逐行标准输入重现交互；导出后可在终端实际输入。",
+  "stdin": "70\n1.75\n",
+  "nodes": [
+    {
+      "id": "interactive",
+      "type": "Python",
+      "title": "输入与表达式",
+      "x": 30,
+      "y": 80,
+      "config": {
+        "code": "weight = float(input('体重(kg)：'))\nheight = float(input('身高(m)：'))\nif weight <= 0 or height <= 0:\n    raise ValueError('体重和身高必须为正数')\nresult = round(weight / height ** 2, 2)\nprint(f'BMI = {result}')"
+      }
+    },
+    {
+      "id": "out",
+      "type": "Output",
+      "title": "Output",
+      "x": 380,
+      "y": 80,
+      "config": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "interactive",
+      "out": "value",
+      "target": "out",
+      "in": "value"
+    }
+  ],
+  "checks": {
+    "out": {
+      "value": 22.86
+    }
+  },
+  "verified": true
+}

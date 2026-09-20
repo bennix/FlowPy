@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "name": "BMI 计算器",
+  "week": 2,
+  "description": "变量、数值运算、字典输入与边界校验；体重 kg / 身高 m。",
+  "stdin": "",
+  "nodes": [
+    {
+      "id": "input",
+      "type": "Constant",
+      "title": "输入数据",
+      "x": 30,
+      "y": 80,
+      "config": {
+        "value": {
+          "weight": 70,
+          "height": 1.75
+        }
+      }
+    },
+    {
+      "id": "logic",
+      "type": "Python",
+      "title": "Python 处理",
+      "x": 350,
+      "y": 80,
+      "config": {
+        "code": "weight, height = float(value['weight']), float(value['height'])\nif weight <= 0 or height <= 0:\n    raise ValueError('体重和身高必须大于 0')\nbmi = weight / height ** 2\ncategory = '偏瘦' if bmi < 18.5 else '正常' if bmi < 24 else '超重' if bmi < 28 else '肥胖'\nresult = {'bmi': round(bmi, 2), 'category': category}"
+      }
+    },
+    {
+      "id": "out",
+      "type": "Output",
+      "title": "结果",
+      "x": 700,
+      "y": 80,
+      "config": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "input",
+      "out": "value",
+      "target": "logic",
+      "in": "value"
+    },
+    {
+      "source": "logic",
+      "out": "value",
+      "target": "out",
+      "in": "value"
+    }
+  ],
+  "checks": {
+    "out": {
+      "value": {
+        "bmi": 22.86,
+        "category": "正常"
+      }
+    }
+  },
+  "verified": true
+}

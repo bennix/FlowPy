@@ -1,0 +1,63 @@
+{
+  "slug": "w11_csv_json_roundtrip",
+  "raw_file": "batch05.mp4",
+  "meta_file": "batch05.meta.json",
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "start": 1789888675.243,
+      "end": 1789888676.065
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "start": 1789888676.075,
+      "end": 1789888676.952
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "start": 1789888676.961,
+      "end": 1789888677.866
+    },
+    {
+      "index": 3,
+      "action": "edge",
+      "start": 1789888677.876,
+      "end": 1789888678.853
+    },
+    {
+      "index": 4,
+      "action": "node",
+      "start": 1789888678.864,
+      "end": 1789888679.741
+    },
+    {
+      "index": 5,
+      "action": "edge",
+      "start": 1789888679.75,
+      "end": 1789888680.74
+    },
+    {
+      "index": 6,
+      "action": "run",
+      "start": 1789888680.749,
+      "end": 1789888681.317
+    },
+    {
+      "index": 7,
+      "action": "result",
+      "start": 1789888681.333,
+      "end": 1789888681.874
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "uiConstructed": true,
+    "expectedMatched": true,
+    "nodes": 3,
+    "edges": 2,
+    "status": "执行成功，所有可展示输出与预期一致"
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "slug": "w03_ai_debug_log",
+  "raw_file": "batch02.mp4",
+  "meta_file": "batch02.meta.json",
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "start": 1789888379.801,
+      "end": 1789888380.624
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "start": 1789888380.633,
+      "end": 1789888381.524
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "start": 1789888381.534,
+      "end": 1789888382.467
+    },
+    {
+      "index": 3,
+      "action": "edge",
+      "start": 1789888382.478,
+      "end": 1789888383.466
+    },
+    {
+      "index": 4,
+      "action": "node",
+      "start": 1789888383.476,
+      "end": 1789888384.348
+    },
+    {
+      "index": 5,
+      "action": "edge",
+      "start": 1789888384.358,
+      "end": 1789888385.358
+    },
+    {
+      "index": 6,
+      "action": "run",
+      "start": 1789888385.367,
+      "end": 1789888385.934
+    },
+    {
+      "index": 7,
+      "action": "result",
+      "start": 1789888385.944,
+      "end": 1789888386.433
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "uiConstructed": true,
+    "expectedMatched": true,
+    "nodes": 3,
+    "edges": 2,
+    "status": "执行成功，所有可展示输出与预期一致"
+  }
+}

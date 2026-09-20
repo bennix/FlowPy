@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "name": "Lambda 与高阶 map / filter",
+  "week": 9,
+  "description": "匿名函数作为一等值；Map 变换成绩，Filter 按谓词筛选。",
+  "stdin": "",
+  "nodes": [
+    {
+      "id": "scores",
+      "type": "Constant",
+      "title": "Constant",
+      "x": 30,
+      "y": 80,
+      "config": {
+        "value": [
+          45,
+          59,
+          60,
+          85,
+          98
+        ]
+      }
+    },
+    {
+      "id": "add",
+      "type": "Lambda",
+      "title": "Lambda",
+      "x": 30,
+      "y": 370,
+      "config": {
+        "params": "score",
+        "expression": "min(score + 5, 100)"
+      }
+    },
+    {
+      "id": "map",
+      "type": "Map",
+      "title": "Map",
+      "x": 350,
+      "y": 80,
+      "config": {}
+    },
+    {
+      "id": "passing",
+      "type": "Lambda",
+      "title": "Lambda",
+      "x": 350,
+      "y": 370,
+      "config": {
+        "params": "score",
+        "expression": "score >= 60"
+      }
+    },
+    {
+      "id": "filter",
+      "type": "Filter",
+      "title": "Filter",
+      "x": 680,
+      "y": 80,
+      "config": {}
+    },
+    {
+      "id": "out",
+      "type": "Output",
+      "title": "Output",
+      "x": 1010,
+      "y": 80,
+      "config": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "scores",
+      "out": "value",
+      "target": "map",
+      "in": "items"
+    },
+    {
+      "source": "add",
+      "out": "function",
+      "target": "map",
+      "in": "function"
+    },
+    {
+      "source": "map",
+      "out": "items",
+      "target": "filter",
+      "in": "items"
+    },
+    {
+      "source": "passing",
+      "out": "function",
+      "target": "filter",
+      "in": "function"
+    },
+    {
+      "source": "filter",
+      "out": "items",
+      "target": "out",
+      "in": "value"
+    }
+  ],
+  "checks": {
+    "out": {
+      "value": [
+        64,
+        65,
+        90,
+        100
+      ]
+    }
+  },
+  "verified": true
+}

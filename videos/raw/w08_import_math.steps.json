@@ -1,0 +1,63 @@
+{
+  "slug": "w08_import_math",
+  "raw_file": "batch03.mp4",
+  "meta_file": "batch03.meta.json",
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "start": 1789888492.226,
+      "end": 1789888493.04
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "start": 1789888493.049,
+      "end": 1789888493.957
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "start": 1789888493.967,
+      "end": 1789888494.873
+    },
+    {
+      "index": 3,
+      "action": "edge",
+      "start": 1789888494.882,
+      "end": 1789888495.874
+    },
+    {
+      "index": 4,
+      "action": "node",
+      "start": 1789888495.883,
+      "end": 1789888496.74
+    },
+    {
+      "index": 5,
+      "action": "edge",
+      "start": 1789888496.749,
+      "end": 1789888497.74
+    },
+    {
+      "index": 6,
+      "action": "run",
+      "start": 1789888497.753,
+      "end": 1789888498.324
+    },
+    {
+      "index": 7,
+      "action": "result",
+      "start": 1789888498.333,
+      "end": 1789888498.823
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "uiConstructed": true,
+    "expectedMatched": true,
+    "nodes": 3,
+    "edges": 2,
+    "status": "执行成功，所有可展示输出与预期一致"
+  }
+}

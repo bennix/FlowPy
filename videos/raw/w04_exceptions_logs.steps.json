@@ -1,0 +1,75 @@
+{
+  "slug": "w04_exceptions_logs",
+  "raw_file": "batch02.mp4",
+  "meta_file": "batch02.meta.json",
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "start": 1789888386.445,
+      "end": 1789888387.274
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "start": 1789888387.283,
+      "end": 1789888388.191
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "start": 1789888388.201,
+      "end": 1789888389.124
+    },
+    {
+      "index": 3,
+      "action": "node",
+      "start": 1789888389.133,
+      "end": 1789888390.007
+    },
+    {
+      "index": 4,
+      "action": "edge",
+      "start": 1789888390.016,
+      "end": 1789888391.032
+    },
+    {
+      "index": 5,
+      "action": "edge",
+      "start": 1789888391.042,
+      "end": 1789888392.051
+    },
+    {
+      "index": 6,
+      "action": "node",
+      "start": 1789888392.062,
+      "end": 1789888392.948
+    },
+    {
+      "index": 7,
+      "action": "edge",
+      "start": 1789888392.958,
+      "end": 1789888393.957
+    },
+    {
+      "index": 8,
+      "action": "run",
+      "start": 1789888393.967,
+      "end": 1789888394.526
+    },
+    {
+      "index": 9,
+      "action": "result",
+      "start": 1789888394.536,
+      "end": 1789888395.025
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "uiConstructed": true,
+    "expectedMatched": true,
+    "nodes": 4,
+    "edges": 3,
+    "status": "执行成功，所有可展示输出与预期一致"
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "slug": "w02_bmi",
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "start": 1789887607.83,
+      "end": 1789887608.575,
+      "nodes": 0,
+      "edges": 0
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "start": 1789887608.586,
+      "end": 1789887609.412,
+      "nodes": 1,
+      "edges": 0
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "start": 1789887609.428,
+      "end": 1789887610.176,
+      "nodes": 2,
+      "edges": 0
+    },
+    {
+      "index": 3,
+      "action": "edge",
+      "start": 1789887610.188,
+      "end": 1789887611.119,
+      "nodes": 2,
+      "edges": 1
+    },
+    {
+      "index": 4,
+      "action": "node",
+      "start": 1789887637.645,
+      "end": 1789887638.386,
+      "nodes": 3,
+      "edges": 1
+    },
+    {
+      "index": 5,
+      "action": "edge",
+      "start": 1789887638.398,
+      "end": 1789887639.261,
+      "nodes": 3,
+      "edges": 2
+    },
+    {
+      "index": 6,
+      "action": "run",
+      "start": 1789887639.275,
+      "end": 1789887639.698,
+      "nodes": 3,
+      "edges": 2
+    },
+    {
+      "index": 7,
+      "action": "result",
+      "start": 1789887639.709,
+      "end": 1789887640.061,
+      "nodes": 3,
+      "edges": 2
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "nodes": 3,
+    "edges": 2,
+    "expectedMatched": true,
+    "result": {
+      "bmi": 22.86,
+      "category": "正常"
+    },
+    "uiConstructed": true
+  }
+}

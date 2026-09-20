@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "name": "模块化重构：可视化子图",
+  "week": 10,
+  "description": "主画布只保留列表与 Map；进入 Map 子图编辑单条记录的处理。",
+  "stdin": "",
+  "nodes": [
+    {
+      "id": "records",
+      "type": "Constant",
+      "title": "Constant",
+      "x": 30,
+      "y": 80,
+      "config": {
+        "value": [
+          {
+            "name": "Alice",
+            "score": 85
+          },
+          {
+            "name": "Bob",
+            "score": 59
+          }
+        ]
+      }
+    },
+    {
+      "id": "map",
+      "type": "Map",
+      "title": "Map",
+      "x": 350,
+      "y": 80,
+      "config": {
+        "body": {
+          "version": 1,
+          "name": "验证单条学生记录",
+          "nodes": [
+            {
+              "id": "item",
+              "type": "Item",
+              "title": "Item",
+              "x": 30,
+              "y": 80,
+              "config": {
+                "value": {
+                  "name": "Alice",
+                  "score": 85
+                }
+              }
+            },
+            {
+              "id": "check",
+              "type": "Python",
+              "title": "Python",
+              "x": 340,
+              "y": 80,
+              "config": {
+                "code": "if not isinstance(value, dict):\n    raise TypeError(\"记录必须是 dict\")\nresult = {\"name\": value[\"name\"], \"passed\": value[\"score\"] >= 60}"
+              }
+            },
+            {
+              "id": "out",
+              "type": "Output",
+              "title": "Output",
+              "x": 680,
+              "y": 80,
+              "config": {}
+            }
+          ],
+          "edges": [
+            {
+              "source": "item",
+              "out": "value",
+              "target": "check",
+              "in": "value"
+            },
+            {
+              "source": "check",
+              "out": "value",
+              "target": "out",
+              "in": "value"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "out",
+      "type": "Output",
+      "title": "Output",
+      "x": 700,
+      "y": 80,
+      "config": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "records",
+      "out": "value",
+      "target": "map",
+      "in": "items"
+    },
+    {
+      "source": "map",
+      "out": "items",
+      "target": "out",
+      "in": "value"
+    }
+  ],
+  "checks": {
+    "out": {
+      "value": [
+        {
+          "name": "Alice",
+          "passed": true
+        },
+        {
+          "name": "Bob",
+          "passed": false
+        }
+      ]
+    }
+  },
+  "verified": true
+}

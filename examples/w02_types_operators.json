@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "name": "基础类型与运算符",
+  "week": 2,
+  "description": "int / float / str / bool、算术、比较与逻辑运算。",
+  "stdin": "",
+  "nodes": [
+    {
+      "id": "input",
+      "type": "Constant",
+      "title": "输入数据",
+      "x": 30,
+      "y": 80,
+      "config": {
+        "value": {
+          "a": 17,
+          "b": 5
+        }
+      }
+    },
+    {
+      "id": "logic",
+      "type": "Python",
+      "title": "Python 处理",
+      "x": 350,
+      "y": 80,
+      "config": {
+        "code": "a, b = value['a'], value['b']\nresult = {'sum': a+b, 'quotient': a//b, 'remainder': a%b,\n          'power': b**2, 'comparison': a>b and b>0,\n          'text': f'{a}/{b}', 'conversion': int('42')}"
+      }
+    },
+    {
+      "id": "out",
+      "type": "Output",
+      "title": "结果",
+      "x": 700,
+      "y": 80,
+      "config": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "input",
+      "out": "value",
+      "target": "logic",
+      "in": "value"
+    },
+    {
+      "source": "logic",
+      "out": "value",
+      "target": "out",
+      "in": "value"
+    }
+  ],
+  "checks": {
+    "out": {
+      "value": {
+        "sum": 22,
+        "quotient": 3,
+        "remainder": 2,
+        "power": 25,
+        "comparison": true,
+        "text": "17/5",
+        "conversion": 42
+      }
+    }
+  },
+  "verified": true
+}

@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "name": "标准库：提取邮箱与手机号",
+  "week": 8,
+  "description": "仅做文本抽取：两个正则输出列表，再由 Python 合并结构化结果。",
+  "stdin": "",
+  "nodes": [
+    {
+      "id": "text",
+      "type": "LoadText",
+      "title": "LoadText",
+      "x": 30,
+      "y": 80,
+      "config": {
+        "text": "联系 alice@example.com / bob@test.org；手机 13800138000、13912345678。"
+      }
+    },
+    {
+      "id": "emails",
+      "type": "RegexFindall",
+      "title": "RegexFindall",
+      "x": 340,
+      "y": 80,
+      "config": {
+        "pattern": "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
+      }
+    },
+    {
+      "id": "phones",
+      "type": "RegexFindall",
+      "title": "RegexFindall",
+      "x": 340,
+      "y": 370,
+      "config": {
+        "pattern": "(?<!\\d)1[3-9]\\d{9}(?!\\d)"
+      }
+    },
+    {
+      "id": "combine",
+      "type": "Python",
+      "title": "Python",
+      "x": 680,
+      "y": 80,
+      "config": {
+        "code": "result = {\"emails\": value, \"phones\": items}"
+      }
+    },
+    {
+      "id": "out",
+      "type": "Output",
+      "title": "Output",
+      "x": 1020,
+      "y": 80,
+      "config": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "text",
+      "out": "text",
+      "target": "emails",
+      "in": "text"
+    },
+    {
+      "source": "text",
+      "out": "text",
+      "target": "phones",
+      "in": "text"
+    },
+    {
+      "source": "emails",
+      "out": "matches",
+      "target": "combine",
+      "in": "value"
+    },
+    {
+      "source": "phones",
+      "out": "matches",
+      "target": "combine",
+      "in": "items"
+    },
+    {
+      "source": "combine",
+      "out": "value",
+      "target": "out",
+      "in": "value"
+    }
+  ],
+  "checks": {
+    "out": {
+      "value": {
+        "emails": [
+          "alice@example.com",
+          "bob@test.org"
+        ],
+        "phones": [
+          "13800138000",
+          "13912345678"
+        ]
+      }
+    }
+  },
+  "verified": true
+}

@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "name": "标准库：等额本息月供",
+  "week": 8,
+  "description": "函数、math.pow 与零利率分支；年利率使用小数，例如 0.045。",
+  "stdin": "",
+  "nodes": [
+    {
+      "id": "input",
+      "type": "Constant",
+      "title": "输入数据",
+      "x": 30,
+      "y": 80,
+      "config": {
+        "value": {
+          "principal": 100000,
+          "annual_rate": 0.045,
+          "months": 360
+        }
+      }
+    },
+    {
+      "id": "logic",
+      "type": "Python",
+      "title": "Python 处理",
+      "x": 350,
+      "y": 80,
+      "config": {
+        "code": "import math\nprincipal, annual_rate, months = value['principal'], value['annual_rate'], value['months']\nif principal <= 0 or annual_rate < 0 or months <= 0 or int(months) != months:\n    raise ValueError('贷款本金、利率或期数无效')\nrate = annual_rate / 12\npayment = principal / months if rate == 0 else principal * rate * math.pow(1 + rate, months) / (math.pow(1 + rate, months) - 1)\nresult = {'monthly_payment': round(payment, 2), 'months': months}"
+      }
+    },
+    {
+      "id": "out",
+      "type": "Output",
+      "title": "结果",
+      "x": 700,
+      "y": 80,
+      "config": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "input",
+      "out": "value",
+      "target": "logic",
+      "in": "value"
+    },
+    {
+      "source": "logic",
+      "out": "value",
+      "target": "out",
+      "in": "value"
+    }
+  ],
+  "checks": {
+    "out": {
+      "value": {
+        "monthly_payment": 506.69,
+        "months": 360
+      }
+    }
+  },
+  "verified": true
+}

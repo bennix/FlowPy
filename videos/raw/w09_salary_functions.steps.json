@@ -1,0 +1,75 @@
+{
+  "slug": "w09_salary_functions",
+  "raw_file": "batch04.mp4",
+  "meta_file": "batch04.meta.json",
+  "steps": [
+    {
+      "index": 0,
+      "action": "start",
+      "start": 1789888575.74,
+      "end": 1789888576.576
+    },
+    {
+      "index": 1,
+      "action": "node",
+      "start": 1789888576.588,
+      "end": 1789888577.503
+    },
+    {
+      "index": 2,
+      "action": "node",
+      "start": 1789888577.514,
+      "end": 1789888578.408
+    },
+    {
+      "index": 3,
+      "action": "node",
+      "start": 1789888578.42,
+      "end": 1789888579.315
+    },
+    {
+      "index": 4,
+      "action": "edge",
+      "start": 1789888579.325,
+      "end": 1789888580.302
+    },
+    {
+      "index": 5,
+      "action": "edge",
+      "start": 1789888580.314,
+      "end": 1789888581.346
+    },
+    {
+      "index": 6,
+      "action": "node",
+      "start": 1789888581.357,
+      "end": 1789888582.241
+    },
+    {
+      "index": 7,
+      "action": "edge",
+      "start": 1789888582.25,
+      "end": 1789888583.24
+    },
+    {
+      "index": 8,
+      "action": "run",
+      "start": 1789888583.25,
+      "end": 1789888583.824
+    },
+    {
+      "index": 9,
+      "action": "result",
+      "start": 1789888583.832,
+      "end": 1789888584.316
+    }
+  ],
+  "proof": {
+    "startedEmpty": true,
+    "uiConstructed": true,
+    "expectedMatched": true,
+    "nodes": 4,
+    "edges": 3,
+    "status": "执行成功，所有可展示输出与预期一致"
+  }
+}

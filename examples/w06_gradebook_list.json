@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "name": "学生成绩管理：列表与元组",
+  "week": 6,
+  "description": "新增、修改、删除、排序与聚合；元组保留不可变记录。",
+  "stdin": "",
+  "nodes": [
+    {
+      "id": "input",
+      "type": "Constant",
+      "title": "输入数据",
+      "x": 30,
+      "y": 80,
+      "config": {
+        "value": [
+          [
+            "Alice",
+            85
+          ],
+          [
+            "Bob",
+            59
+          ],
+          [
+            "Chen",
+            92
+          ]
+        ]
+      }
+    },
+    {
+      "id": "logic",
+      "type": "Python",
+      "title": "Python 处理",
+      "x": 350,
+      "y": 80,
+      "config": {
+        "code": "students = [list(row) for row in value]\nstudents.append(['Dora', 78])\nfor row in students:\n    if row[0] == 'Bob': row[1] = 65\nstudents = [row for row in students if row[0] != 'Dora']\nranked = sorted((tuple(row) for row in students), key=lambda row: row[1], reverse=True)\nresult = {'ranked': ranked, 'average': round(sum(row[1] for row in ranked)/len(ranked), 2), 'passed': sum(score >= 60 for _, score in ranked)}"
+      }
+    },
+    {
+      "id": "out",
+      "type": "Output",
+      "title": "结果",
+      "x": 700,
+      "y": 80,
+      "config": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "input",
+      "out": "value",
+      "target": "logic",
+      "in": "value"
+    },
+    {
+      "source": "logic",
+      "out": "value",
+      "target": "out",
+      "in": "value"
+    }
+  ],
+  "checks": {
+    "out": {
+      "value": {
+        "ranked": [
+          [
+            "Chen",
+            92
+          ],
+          [
+            "Alice",
+            85
+          ],
+          [
+            "Bob",
+            65
+          ]
+        ],
+        "average": 80.67,
+        "passed": 3
+      }
+    }
+  },
+  "verified": true
+}
