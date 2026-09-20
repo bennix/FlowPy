@@ -60,17 +60,23 @@ def json_view(value, active=None, depth=0):
 def main():
     graph = json.load(sys.stdin)
     sys.stdin = io.StringIO(graph.get('stdin', ''))
-    output = {'ok': False, 'results': {}}
+    output = {'ok': False, 'results': {}, 'trace': []}
     log = BoundedLog()
     start = time.perf_counter()
+    trace_values = {}
     try:
         namespace = {'__name__': 'flowpy_run'}
         with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
             exec(compile(source_body(graph), '<graph>', 'exec'), namespace)
-            namespace['run_graph'](output['results'])
+            output['results'] = namespace['run_graph'](trace_values)
         output['ok'] = True
     except BaseException as exc:
         output['error'] = str(exc) or type(exc).__name__
+        output['results'] = trace_values
+    output['trace'] = [
+        {'node': node_id, 'status': 'skipped' if value is None else 'completed'}
+        for node_id, value in trace_values.items()
+    ]
     output['logs'] = log.getvalue()
     output['duration'] = round((time.perf_counter() - start) * 1000, 2)
     with open(sys.argv[1], 'w', encoding='utf-8') as file:

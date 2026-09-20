@@ -48,6 +48,14 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(status,200);self.assertGreaterEqual(len(examples),22)
         self.assertTrue(all(e['verified'] for e in examples))
 
+    def test_extension_catalog_and_install_allowlist(self):
+        status, packages=self.request('/api/packages',method='GET')
+        self.assertEqual(status,200)
+        self.assertEqual({item['name'] for item in packages},{'numpy','openpyxl','pandas','pyyaml','requests'})
+        status, result=self.request('/api/packages/install',{'name':'not-a-package'})
+        self.assertEqual(status,400)
+        self.assertIn('扩展目录',result['error'])
+
     def test_run_input_and_output(self):
         g=graph([node('a','Python',code='result = int(input()) * 2')]);g['stdin']='21\n'
         status,result=self.request('/api/run',{'graph':g})

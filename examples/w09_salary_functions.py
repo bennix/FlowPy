@@ -1,5 +1,5 @@
 # FlowPy graph v1: eyJ2ZXJzaW9uIjoxLCJuYW1lIjoi6Jaq6LWE6K6h566X5Zmo77ya5a6M5pW05Ye95pWw562+5ZCNIiwid2VlayI6OSwiZGVzY3JpcHRpb24iOiLkvY3nva7pmZDlrprlj4LmlbDjgIEqYm9udXNlc+OAgem7mOiupOWAvOOAgeWFs+mUruWtl+WPguaVsOWSjCAqKm1ldGFkYXRh44CCIiwic3RkaW4iOiIiLCJub2RlcyI6W3siaWQiOiJzYWxhcnkiLCJ0eXBlIjoiRnVuY3Rpb24iLCJ0aXRsZSI6IkZ1bmN0aW9uIiwieCI6MzAsInkiOjgwLCJjb25maWciOnsibmFtZSI6InNhbGFyeSIsImNvZGUiOiJkZWYgc2FsYXJ5KGJhc2UsIC8sICpib251c2VzLCB0YXhfcmF0ZT0wLjEsIGFsbG93YW5jZT0wLCAqKm1ldGFkYXRhKTpcbiAgICBpZiBiYXNlIDwgMCBvciBub3QgMCA8PSB0YXhfcmF0ZSA8PSAxOlxuICAgICAgICByYWlzZSBWYWx1ZUVycm9yKCfolqrotYTmiJbnqI7njofml6DmlYgnKVxuICAgIGdyb3NzID0gYmFzZSArIHN1bShib251c2VzKSArIGFsbG93YW5jZVxuICAgIHJldHVybiB7J2dyb3NzJzogcm91bmQoZ3Jvc3MsIDIpLCAnbmV0Jzogcm91bmQoZ3Jvc3MgKiAoMS10YXhfcmF0ZSksIDIpLCAnZW1wbG95ZWUnOiBtZXRhZGF0YS5nZXQoJ2VtcGxveWVlJywgJ2Fub255bW91cycpfSJ9fSx7ImlkIjoiYXJncyIsInR5cGUiOiJDb25zdGFudCIsInRpdGxlIjoiQ29uc3RhbnQiLCJ4IjozMCwieSI6MzgwLCJjb25maWciOnsidmFsdWUiOlsxMDAwMCwxMDAwLDUwMF19fSx7ImlkIjoiY2FsbCIsInR5cGUiOiJDYWxsIiwidGl0bGUiOiJDYWxsIiwieCI6NDAwLCJ5Ijo4MCwiY29uZmlnIjp7Imt3YXJncyI6eyJ0YXhfcmF0ZSI6MC4xLCJhbGxvd2FuY2UiOjIwMCwiZW1wbG95ZWUiOiJBbGljZSJ9fX0seyJpZCI6Im91dCIsInR5cGUiOiJPdXRwdXQiLCJ0aXRsZSI6Ik91dHB1dCIsIngiOjc2MCwieSI6ODAsImNvbmZpZyI6e319XSwiZWRnZXMiOlt7InNvdXJjZSI6InNhbGFyeSIsIm91dCI6ImZ1bmN0aW9uIiwidGFyZ2V0IjoiY2FsbCIsImluIjoiZnVuY3Rpb24ifSx7InNvdXJjZSI6ImFyZ3MiLCJvdXQiOiJ2YWx1ZSIsInRhcmdldCI6ImNhbGwiLCJpbiI6ImFyZ3MifSx7InNvdXJjZSI6ImNhbGwiLCJvdXQiOiJ2YWx1ZSIsInRhcmdldCI6Im91dCIsImluIjoidmFsdWUifV0sImNoZWNrcyI6eyJvdXQiOnsidmFsdWUiOnsiZ3Jvc3MiOjExNzAwLCJuZXQiOjEwNTMwLjAsImVtcGxveWVlIjoiQWxpY2UifX19LCJ2ZXJpZmllZCI6dHJ1ZX0=
-# FlowPy source sha256: cafe17126703754145cdae226e37113edb283bb24825c07d91c82c2c525fc6fd
+# FlowPy source sha256: bbadd03e3f91f342d4f637b3b8a5efb11f418706266d0f6db6f902cc0de4e406
 import re
 import inspect
 import asyncio
@@ -59,28 +59,40 @@ def run_graph(trace=None, context=None):
         else:
             results['salary'] = None
         if trace is not None:
-            trace['salary'] = results['salary']
+            if isinstance(trace, list):
+                trace.append({'node': 'salary', 'status': 'skipped' if results['salary'] is None else 'completed'})
+            else:
+                trace['salary'] = results['salary']
         current_node = 'args'
         if True:
             results['args'] = node_args({})
         else:
             results['args'] = None
         if trace is not None:
-            trace['args'] = results['args']
+            if isinstance(trace, list):
+                trace.append({'node': 'args', 'status': 'skipped' if results['args'] is None else 'completed'})
+            else:
+                trace['args'] = results['args']
         current_node = 'call'
         if results['salary'] is not None and results['args'] is not None:
             results['call'] = node_call({'function': results['salary']['function'], 'args': results['args']['value']})
         else:
             results['call'] = None
         if trace is not None:
-            trace['call'] = results['call']
+            if isinstance(trace, list):
+                trace.append({'node': 'call', 'status': 'skipped' if results['call'] is None else 'completed'})
+            else:
+                trace['call'] = results['call']
         current_node = 'out'
         if results['call'] is not None:
             results['out'] = node_out({'value': results['call']['value']})
         else:
             results['out'] = None
         if trace is not None:
-            trace['out'] = results['out']
+            if isinstance(trace, list):
+                trace.append({'node': 'out', 'status': 'skipped' if results['out'] is None else 'completed'})
+            else:
+                trace['out'] = results['out']
     except Exception as exc:
         raise RuntimeError(f'节点 {current_node}: {exc}') from exc
     return results

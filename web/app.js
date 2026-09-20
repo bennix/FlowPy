@@ -1,102 +1,1444 @@
-'use strict';
-const $ = id => document.getElementById(id);
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const clone = value => JSON.parse(JSON.stringify(value));
-const colors = {input:'#9bacfb',regex:'#d9b0ed',control:'#eccb8b',python:'#a1ceee',output:'#a7dfb9'};
-const types = {
- Assert:{group:'output',symbol:'✓',label:'结果断言',desc:'将 value 与预期 expected 比较；不相等时报告 AssertionError。用于保存可重复运行的测试流程。',config:{expected:42}},
- ImportModule:{group:'python',symbol:'↙',label:'导入标准模块',desc:'导入 math、random、string、re 或已安装的 pandas。可指定属性路径，例如 math.sqrt 输出可调用函数。',config:{module:'math',attribute:'sqrt'}},
- Module:{group:'python',symbol:'▣',label:'自定义模块',desc:'将相关函数封装在独立模块命名空间。用 Get 提取函数，再通过 Call 调用；保持主图简洁。',config:{name:'gradebook',code:'def average(scores):\n    return sum(scores) / len(scores) if scores else 0'}},
- Item:{group:'input',symbol:'↓',label:'子图输入',desc:'在 Map / Filter / Loop 子图中接收当前 value、index 与 acc。单独运行子图时使用下面的测试值。',config:{value:'ORD-123456'}},
- LoadText:{group:'input',symbol:'T',label:'文本输入',desc:'输入原始文本，供下游正则与 Python 节点处理。',config:{text:'Order received: ORD-123456\nCustomer: Alice\nStatus: paid'}},
- Constant:{group:'input',symbol:'π',label:'常量 / Pattern',desc:'定义可复用常量。字符串可直接输入；列表、字典和数值使用 JSON。',config:{value:'ORD-(?P<id>\\d{6})'}},
- RegexMatch:{group:'regex',symbol:'.*',label:'匹配与抽取',desc:'搜索首个匹配，输出固定结构。只负责文本变换，不参与流程跳转。',config:{pattern:'ORD-(?P<id>\\d{6})',text:'',flags:[]}},
- RegexFindall:{group:'regex',symbol:'≋',label:'查找全部匹配',desc:'输出匹配列表，可直接接入 Map 或 Filter。',config:{pattern:'ORD-\\d{6}',text:'',flags:[]}},
- RegexSub:{group:'regex',symbol:'↔',label:'替换文本',desc:'替换匹配内容。repl 可连接函数节点，函数接收 re.Match 并返回字符串。',config:{pattern:'\\d+',repl:'***',text:'',flags:[]}},
- RegexSplit:{group:'regex',symbol:'⋮',label:'拆分文本',desc:'按正则拆分字符串，输出 parts 列表。',config:{pattern:'[,;\\s]+',text:'',flags:[]}},
- RegexSwitch:{group:'regex',symbol:'≡',label:'优先级匹配',desc:'从上到下匹配规则，仅输出 case 与 groups。下游 Switch 负责路由。',config:{rules:[{pattern:'^https?://',case:'url'},{pattern:'^\\d+$',case:'id'},{pattern:'.+',case:'plain'}],text:'',flags:[]}},
- Get:{group:'control',symbol:'↳',label:'获取字段',desc:'通过点分路径获取字典字段、列表索引或对象属性，例如 groups.id、0.name、模块函数 average。',config:{path:'id'}},
- If:{group:'control',symbol:'⑂',label:'条件分支',desc:'仅接收布尔条件。将 true / false 接到下游 gate 端口以选择执行路径。',config:{condition:false}},
- Switch:{group:'control',symbol:'⋔',label:'类别路由',desc:'cases 从上到下判断相等，case_0 / case_1 等独立出口接到下游 gate；default 在全部不匹配时激活。不解析文本。',config:{cases:['url']}},
- Map:{group:'control',symbol:'↻',label:'逐项映射',desc:'对列表每一项调用函数或运行内部 Python 逻辑。可使用 item、index 和 acc；result 为当前项输出。',config:{code:'result = item',limit:1000}},
- Filter:{group:'control',symbol:'▽',label:'条件过滤',desc:'对每一项执行谓词函数，result 必须为 bool。函数或内部逻辑负责判断，Filter 只保留为真的项。',config:{code:'result = bool(item)',limit:1000}},
- Loop:{group:'control',symbol:'⟳',label:'显式循环',desc:'遍历列表，可在内部使用 break / continue。item、index、acc 是显式循环状态，重复执行封装在节点内。',config:{code:'if item is None:\n    break\nresult = item',limit:1000}},
- Function:{group:'python',symbol:'ƒ',label:'函数定义',desc:'保留原生 def / async def 语法：默认值、位置限定参数、*args、关键字限定参数、**kwargs、嵌套函数和装饰器。输出名称指定可调用对象。',config:{name:'transform',code:'def transform(value, prefix="ORD"):\n    return f"{prefix}-{value}"'}},
- Lambda:{group:'python',symbol:'λ',label:'匿名函数',desc:'把 lambda 作为可传递的函数。可以捕获上游 value，连接到 Call、Map、Filter 或 RegexSub。',config:{params:'x',expression:'x.upper()'}},
- Call:{group:'python',symbol:'ƒ()',label:'调用函数',desc:'调用 function(*args, **kwargs)。value 连接时作为首个位置参数；支持 async def，自动等待结果。',config:{args:[],kwargs:{}}},
- Python:{group:'python',symbol:'⌘',label:'Python 逻辑',desc:'复杂判断放在这里。可用 inputs、value、items、text 与 re，写入 result 作为输出；可以返回闭包、绑定方法或任意业务结果。',config:{code:'result = value'}},
- Output:{group:'output',symbol:'↗',label:'结果输出',desc:'展示上游结果。写文件或调用 API 等业务操作放在 Python 节点内。',config:{value:'未发现有效订单号'}}
+"use strict";
+const $ = (id) => document.getElementById(id);
+const esc = (s) =>
+  String(s ?? "").replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ],
+  );
+const clone = (value) => JSON.parse(JSON.stringify(value));
+const colors = {
+  input: "#9bacfb",
+  regex: "#d9b0ed",
+  control: "#eccb8b",
+  python: "#a1ceee",
+  output: "#a7dfb9",
 };
-const groups = [['input','输入与数据','INPUT'],['python','Python 与函数','PYTHON'],['control','结构与控制','CONTROL'],['regex','正则算子','REGEX'],['output','输出与测试','OUTPUT']];
-const n = (id,type,x,y,config={},title) => ({id,type,x,y,title:title||types[type].label,config:{...clone(types[type].config),...config}});
-const e = (source,out,target,input) => ({source,out,target,in:input});
-const examples = [
- {name:'订单解析工作流',description:'文本 → 正则抽取 → 条件路由 → 处理订单 / 默认分支',nodes:[n('text1','LoadText',30,70),n('pattern1','Constant',30,370,{},'订单号匹配规则'),n('match1','RegexMatch',360,130),n('if1','If',690,150,{},'订单是否有效？'),n('python1','Python',1020,70,{code:'order_id = value["id"]\nresult = {"order_id": order_id, "status": "processed"}\nprint(f"订单 {order_id} 处理完成")'},'处理订单'),n('fallback1','Output',1020,380,{},'默认分支')],edges:[e('text1','text','match1','text'),e('pattern1','value','match1','pattern'),e('match1','ok','if1','condition'),e('match1','groups','if1','value'),e('if1','true','python1','gate'),e('if1','value','python1','value'),e('if1','false','fallback1','gate')]},
- {name:'批量抽取与匿名函数',description:'RegexFindall → Map，Lambda 回调批量转换订单号',nodes:[n('text1','LoadText',30,50,{text:'ORD-123456, ORD-234567, ORD-345678'}),n('find1','RegexFindall',350,50),n('lambda1','Lambda',350,350,{params:'order',expression:'{"id": order[4:], "valid": True}'}),n('map1','Map',690,100),n('out1','Output',1020,100)],edges:[e('text1','text','find1','text'),e('find1','matches','map1','items'),e('lambda1','function','map1','function'),e('map1','items','out1','value')]},
- {name:'函数定义与灵活调用',description:'默认参数、*args、关键字限定参数、**kwargs 与 Call',nodes:[n('fn1','Function',30,80,{name:'format_order',code:'def format_order(order_id, /, *tags, prefix="ORD", **meta):\n    return {"order": f"{prefix}-{order_id}",\n            "tags": list(tags), "meta": meta}'}),n('args1','Constant',30,380,{value:['123456','paid','priority']}),n('call1','Call',380,120,{kwargs:{prefix:'ORDER',customer:'Alice'}}),n('out1','Output',730,120)],edges:[e('fn1','function','call1','function'),e('args1','value','call1','args'),e('call1','value','out1','value')]},
- {name:'正则谓词过滤',description:'正则判断封装成谓词函数，Filter 仅负责按布尔结果筛选',nodes:[n('list1','Constant',30,60,{value:['ORD-123456','invalid','ORD-234567','END']}),n('predicate1','Lambda',30,340,{params:'item',expression:'re.search(r"^ORD-\\d{6}$", item) is not None'}),n('filter1','Filter',400,100),n('out1','Output',740,100)],edges:[e('list1','value','filter1','items'),e('predicate1','function','filter1','function'),e('filter1','items','out1','value')]}
+const types = {
+  Assert: {
+    group: "output",
+    symbol: "✓",
+    label: "结果断言",
+    desc: "将 value 与预期 expected 比较；不相等时报告 AssertionError。用于保存可重复运行的测试流程。",
+    config: { expected: 42 },
+  },
+  ImportModule: {
+    group: "python",
+    symbol: "↙",
+    label: "导入标准模块",
+    desc: "导入 math、random、string、re 或已安装的 pandas。可指定属性路径，例如 math.sqrt 输出可调用函数。",
+    config: { module: "math", attribute: "sqrt" },
+  },
+  Module: {
+    group: "python",
+    symbol: "▣",
+    label: "自定义模块",
+    desc: "将相关函数封装在独立模块命名空间。用 Get 提取函数，再通过 Call 调用；保持主图简洁。",
+    config: {
+      name: "gradebook",
+      code: "def average(scores):\n    return sum(scores) / len(scores) if scores else 0",
+    },
+  },
+  Item: {
+    group: "input",
+    symbol: "↓",
+    label: "子图输入",
+    desc: "在 Map / Filter / Loop 子图中接收当前 value、index 与 acc。单独运行子图时使用下面的测试值。",
+    config: { value: "ORD-123456" },
+  },
+  LoadText: {
+    group: "input",
+    symbol: "T",
+    label: "文本输入",
+    desc: "输入原始文本，供下游正则与 Python 节点处理。",
+    config: {
+      text: "Order received: ORD-123456\nCustomer: Alice\nStatus: paid",
+    },
+  },
+  Constant: {
+    group: "input",
+    symbol: "π",
+    label: "常量 / Pattern",
+    desc: "定义可复用常量。字符串可直接输入；列表、字典和数值使用 JSON。",
+    config: { value: "ORD-(?P<id>\\d{6})" },
+  },
+  RegexMatch: {
+    group: "regex",
+    symbol: ".*",
+    label: "匹配与抽取",
+    desc: "搜索首个匹配，输出固定结构。只负责文本变换，不参与流程跳转。",
+    config: { pattern: "ORD-(?P<id>\\d{6})", text: "", flags: [] },
+  },
+  RegexFindall: {
+    group: "regex",
+    symbol: "≋",
+    label: "查找全部匹配",
+    desc: "输出匹配列表，可直接接入 Map 或 Filter。",
+    config: { pattern: "ORD-\\d{6}", text: "", flags: [] },
+  },
+  RegexSub: {
+    group: "regex",
+    symbol: "↔",
+    label: "替换文本",
+    desc: "替换匹配内容。repl 可连接函数节点，函数接收 re.Match 并返回字符串。",
+    config: { pattern: "\\d+", repl: "***", text: "", flags: [] },
+  },
+  RegexSplit: {
+    group: "regex",
+    symbol: "⋮",
+    label: "拆分文本",
+    desc: "按正则拆分字符串，输出 parts 列表。",
+    config: { pattern: "[,;\\s]+", text: "", flags: [] },
+  },
+  RegexSwitch: {
+    group: "regex",
+    symbol: "≡",
+    label: "优先级匹配",
+    desc: "从上到下匹配规则，仅输出 case 与 groups。下游 Switch 负责路由。",
+    config: {
+      rules: [
+        { pattern: "^https?://", case: "url" },
+        { pattern: "^\\d+$", case: "id" },
+        { pattern: ".+", case: "plain" },
+      ],
+      text: "",
+      flags: [],
+    },
+  },
+  Get: {
+    group: "control",
+    symbol: "↳",
+    label: "获取字段",
+    desc: "通过点分路径获取字典字段、列表索引或对象属性，例如 groups.id、0.name、模块函数 average。",
+    config: { path: "id" },
+  },
+  If: {
+    group: "control",
+    symbol: "⑂",
+    label: "条件分支",
+    desc: "仅接收布尔条件。将 true / false 接到下游 gate 端口以选择执行路径。",
+    config: { condition: false },
+  },
+  Switch: {
+    group: "control",
+    symbol: "⋔",
+    label: "类别路由",
+    desc: "cases 从上到下判断相等，case_0 / case_1 等独立出口接到下游 gate；default 在全部不匹配时激活。不解析文本。",
+    config: { cases: ["url"] },
+  },
+  Map: {
+    group: "control",
+    symbol: "↻",
+    label: "逐项映射",
+    desc: "对列表每一项调用函数或运行内部 Python 逻辑。可使用 item、index 和 acc；result 为当前项输出。",
+    config: { code: "result = item", limit: 1000 },
+  },
+  Filter: {
+    group: "control",
+    symbol: "▽",
+    label: "条件过滤",
+    desc: "对每一项执行谓词函数，result 必须为 bool。函数或内部逻辑负责判断，Filter 只保留为真的项。",
+    config: { code: "result = bool(item)", limit: 1000 },
+  },
+  Loop: {
+    group: "control",
+    symbol: "⟳",
+    label: "显式循环",
+    desc: "遍历列表，可在内部使用 break / continue。item、index、acc 是显式循环状态，重复执行封装在节点内。",
+    config: { code: "if item is None:\n    break\nresult = item", limit: 1000 },
+  },
+  Function: {
+    group: "python",
+    symbol: "ƒ",
+    label: "函数定义",
+    desc: "保留原生 def / async def 语法：默认值、位置限定参数、*args、关键字限定参数、**kwargs、嵌套函数和装饰器。输出名称指定可调用对象。",
+    config: {
+      name: "transform",
+      code: 'def transform(value, prefix="ORD"):\n    return f"{prefix}-{value}"',
+    },
+  },
+  Lambda: {
+    group: "python",
+    symbol: "λ",
+    label: "匿名函数",
+    desc: "把 lambda 作为可传递的函数。可以捕获上游 value，连接到 Call、Map、Filter 或 RegexSub。",
+    config: { params: "x", expression: "x.upper()" },
+  },
+  Call: {
+    group: "python",
+    symbol: "ƒ()",
+    label: "调用函数",
+    desc: "调用 function(*args, **kwargs)。value 连接时作为首个位置参数；支持 async def，自动等待结果。",
+    config: { args: [], kwargs: {} },
+  },
+  Python: {
+    group: "python",
+    symbol: "⌘",
+    label: "Python 逻辑",
+    desc: "复杂判断放在这里。可用 inputs、value、items、text 与 re，写入 result 作为输出；可以返回闭包、绑定方法或任意业务结果。",
+    config: { code: "result = value" },
+  },
+  Output: {
+    group: "output",
+    symbol: "↗",
+    label: "结果输出",
+    desc: "展示上游结果。写文件或调用 API 等业务操作放在 Python 节点内。",
+    config: { value: "未发现有效订单号" },
+  },
+};
+const groups = [
+  ["input", "输入与数据", "INPUT"],
+  ["python", "Python 与函数", "PYTHON"],
+  ["control", "结构与控制", "CONTROL"],
+  ["regex", "正则算子", "REGEX"],
+  ["output", "输出与测试", "OUTPUT"],
 ];
-let graph = clone(examples[0]), specs = {}, selected = 'match1', selectedEdge = -1, pendingPort = null;
-let view = {x:20,y:100,scale:.7}, drag = null, history = [], future = [], run = null, activeConsole = 'results', codeSource = '', running = false;
-let toastTimer, saveTimer, wireFrame;
+const n = (id, type, x, y, config = {}, title) => ({
+  id,
+  type,
+  x,
+  y,
+  title: title || types[type].label,
+  config: { ...clone(types[type].config), ...config },
+});
+const e = (source, out, target, input) => ({ source, out, target, in: input });
+const examples = [
+  {
+    name: "订单解析工作流",
+    description: "文本 → 正则抽取 → 条件路由 → 处理订单 / 默认分支",
+    nodes: [
+      n("text1", "LoadText", 30, 70),
+      n("pattern1", "Constant", 30, 370, {}, "订单号匹配规则"),
+      n("match1", "RegexMatch", 360, 130),
+      n("if1", "If", 690, 150, {}, "订单是否有效？"),
+      n(
+        "python1",
+        "Python",
+        1020,
+        70,
+        {
+          code: 'order_id = value["id"]\nresult = {"order_id": order_id, "status": "processed"}\nprint(f"订单 {order_id} 处理完成")',
+        },
+        "处理订单",
+      ),
+      n("fallback1", "Output", 1020, 380, {}, "默认分支"),
+    ],
+    edges: [
+      e("text1", "text", "match1", "text"),
+      e("pattern1", "value", "match1", "pattern"),
+      e("match1", "ok", "if1", "condition"),
+      e("match1", "groups", "if1", "value"),
+      e("if1", "true", "python1", "gate"),
+      e("if1", "value", "python1", "value"),
+      e("if1", "false", "fallback1", "gate"),
+    ],
+  },
+  {
+    name: "批量抽取与匿名函数",
+    description: "RegexFindall → Map，Lambda 回调批量转换订单号",
+    nodes: [
+      n("text1", "LoadText", 30, 50, {
+        text: "ORD-123456, ORD-234567, ORD-345678",
+      }),
+      n("find1", "RegexFindall", 350, 50),
+      n("lambda1", "Lambda", 350, 350, {
+        params: "order",
+        expression: '{"id": order[4:], "valid": True}',
+      }),
+      n("map1", "Map", 690, 100),
+      n("out1", "Output", 1020, 100),
+    ],
+    edges: [
+      e("text1", "text", "find1", "text"),
+      e("find1", "matches", "map1", "items"),
+      e("lambda1", "function", "map1", "function"),
+      e("map1", "items", "out1", "value"),
+    ],
+  },
+  {
+    name: "函数定义与灵活调用",
+    description: "默认参数、*args、关键字限定参数、**kwargs 与 Call",
+    nodes: [
+      n("fn1", "Function", 30, 80, {
+        name: "format_order",
+        code: 'def format_order(order_id, /, *tags, prefix="ORD", **meta):\n    return {"order": f"{prefix}-{order_id}",\n            "tags": list(tags), "meta": meta}',
+      }),
+      n("args1", "Constant", 30, 380, {
+        value: ["123456", "paid", "priority"],
+      }),
+      n("call1", "Call", 380, 120, {
+        kwargs: { prefix: "ORDER", customer: "Alice" },
+      }),
+      n("out1", "Output", 730, 120),
+    ],
+    edges: [
+      e("fn1", "function", "call1", "function"),
+      e("args1", "value", "call1", "args"),
+      e("call1", "value", "out1", "value"),
+    ],
+  },
+  {
+    name: "正则谓词过滤",
+    description: "正则判断封装成谓词函数，Filter 仅负责按布尔结果筛选",
+    nodes: [
+      n("list1", "Constant", 30, 60, {
+        value: ["ORD-123456", "invalid", "ORD-234567", "END"],
+      }),
+      n("predicate1", "Lambda", 30, 340, {
+        params: "item",
+        expression: 're.search(r"^ORD-\\d{6}$", item) is not None',
+      }),
+      n("filter1", "Filter", 400, 100),
+      n("out1", "Output", 740, 100),
+    ],
+    edges: [
+      e("list1", "value", "filter1", "items"),
+      e("predicate1", "function", "filter1", "function"),
+      e("filter1", "items", "out1", "value"),
+    ],
+  },
+];
+let graph = clone(examples[0]),
+  specs = {},
+  selected = "match1",
+  selectedEdge = -1,
+  pendingPort = null;
+let view = { x: 20, y: 100, scale: 0.7 },
+  drag = null,
+  history = [],
+  future = [],
+  run = null,
+  activeConsole = "results",
+  codeSource = "",
+  running = false;
+let toastTimer,
+  saveTimer,
+  wireFrame,
+  traceCursor = Infinity,
+  traceTimer;
 let scopeStack = [];
-function nodeSpec(node){const spec=specs[node.type]||[{},{}];if(node.type!=='Switch')return spec;return [spec[0],{...spec[1],...Object.fromEntries((Array.isArray(node.config.cases)?node.config.cases:[]).map((_,i)=>['case_'+i,'bool']))}];}
-function syncScope(){if(scopeStack.length){const parent=scopeStack[scopeStack.length-1];parent.graph.nodes.find(n=>n.id===parent.nodeId).config.body=graph;}return scopeStack.length?scopeStack[0].graph:graph;}
+function nodeSpec(node) {
+  const spec = specs[node.type] || [{}, {}];
+  if (node.type !== "Switch") return spec;
+  return [
+    spec[0],
+    {
+      ...spec[1],
+      ...Object.fromEntries(
+        (Array.isArray(node.config.cases) ? node.config.cases : []).map(
+          (_, i) => ["case_" + i, "bool"],
+        ),
+      ),
+    },
+  ];
+}
+function syncScope() {
+  if (scopeStack.length) {
+    const parent = scopeStack[scopeStack.length - 1];
+    parent.graph.nodes.find((n) => n.id === parent.nodeId).config.body = graph;
+  }
+  return scopeStack.length ? scopeStack[0].graph : graph;
+}
 
-function toast(message){$('toast').textContent=message;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),5000);}
-async function api(path,data){const response=await fetch('/api/'+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});let result=await response.json();if(!response.ok||result.error&&path!=='run')throw Error(result.error||'请求失败');return result;}
-function editorCheckpoint(input){if(!input.dataset.historySaved){checkpoint();input.dataset.historySaved='1';}}
-function checkpoint(){history.push(JSON.stringify(graph));if(history.length>70)history.shift();future=[];}
-function changed(){syncScope();$('backScope').hidden=!scopeStack.length;run=null;codeSource='';$('saveStatus').textContent='保存中…';clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem('flowpy.graph',JSON.stringify(syncScope()));$('saveStatus').textContent='已保存到本机';}catch{$('saveStatus').textContent='本地保存失败';}},250);$('canvasTitle').textContent=graph.name||'未命名工作流';$('projectName').value=graph.name||'未命名工作流';$('nodeCount').textContent=graph.nodes.length+' nodes';$('undoButton').disabled=!history.length;$('redoButton').disabled=!future.length;renderConsole();}
-function restore(serialized){graph=JSON.parse(serialized);selected=graph.nodes[0]?.id;selectedEdge=-1;pendingPort=null;changed();renderNodes();renderInspector();if(!$('codeView').hidden)showCode();}
-function undo(){if(!history.length)return;future.push(JSON.stringify(graph));const prev=history.pop();restore(prev);}
-function redo(){if(!future.length)return;history.push(JSON.stringify(graph));restore(future.pop());}
-function renderLibrary(){const query=$('search').value.toLowerCase();$('library').innerHTML=groups.map(([group,label,en])=>{const entries=Object.entries(types).filter(([type,def])=>def.group===group&&(type+def.label).toLowerCase().includes(query));if(!entries.length)return '';return `<section class="node-category"><div class="category-title"><span>${label}</span><span>${en}</span></div>${entries.map(([type,def])=>`<button class="library-node" data-type="${type}" style="--accent:${colors[group]}" title="添加 ${type}"><span class="node-symbol">${def.symbol}</span><span class="node-label">${type}<small>${def.label}</small></span><span class="add-sign">＋</span></button>`).join('')}</section>`;}).join('');$('library').querySelectorAll('[data-type]').forEach(button=>button.onclick=()=>addNode(button.dataset.type));}
-function addNode(type){checkpoint();const id=type.toLowerCase()+Date.now().toString(36);const rect=$('canvas').getBoundingClientRect();const node=n(id,type,Math.max(0,(rect.width/2-view.x)/view.scale-122),Math.max(0,(rect.height/2-view.y)/view.scale-80));graph.nodes.push(node);selected=id;changed();renderNodes();renderInspector();toast('已添加 '+type);}
-function preview(node){const c=node.config;switch(node.type){case'LoadText':return c.text;case'Item':case'Constant':return typeof c.value==='string'?c.value:JSON.stringify(c.value);case'RegexMatch':case'RegexFindall':case'RegexSplit':return 'r"'+c.pattern+'"';case'RegexSub':return 'r"'+c.pattern+'" → '+c.repl;case'RegexSwitch':return (c.rules||[]).map(r=>`${r.pattern} → ${r.case}`).join('\n');case'If':return 'if condition:\n    → true\nelse: → false';case'Switch':return 'case in '+JSON.stringify(c.cases);case'Get':return 'value.'+c.path;case'Lambda':return `lambda ${c.params}:\n  ${c.expression}`;case'ImportModule':return 'import '+c.module+(c.attribute?'\n→ '+c.attribute:'');case'Module':return c.code;case'Call':return `function(*args, **kwargs)\nargs = ${JSON.stringify(c.args)}`;case'Assert':return 'assert value == '+JSON.stringify(c.expected);case'Output':return graph.edges.some(e=>e.target===node.id&&e.in==='value')?'接收上游结构化结果':JSON.stringify(c.value);default:return c.body?'◈ 可视化子图 · '+c.body.nodes.length+' 个节点':c.code;}}
-function portColor(type){return {bool:'#eccb8b',str:'#c9acdd',list:'#98c6e9',dict:'#a7dfb9',number:'#d6bc9a',any:'#96a9bd'}[type]||'#aabac1';}
-function portHTML(node,name,type,direction){return `<div class="port ${pendingPort?.id===node.id&&pendingPort?.name===name&&direction==='out'?'connecting':''}" data-node="${node.id}" data-port="${name}" data-direction="${direction}" title="${name}: ${type}${name==='gate'?' · 只有 True 时执行':''}" style="--port-color:${portColor(type)}"><i class="port-dot"></i>${direction==='out'?`<small>${type}</small>`:''}<span>${name==='gate'?'◇ gate':esc(name)}</span>${direction==='in'?`<small>${type}</small>`:''}</div>`;}
-function renderNodes(){const target=$('nodes');target.innerHTML=graph.nodes.map(node=>{const def=types[node.type],spec=nodeSpec(node);const inputs=Object.entries({...spec[0],gate:'bool'}),outputs=Object.entries(spec[1]);const result=run?.results?.[node.id];const hasResult=run&&Object.hasOwn(run.results||{},node.id);let state=hasResult?(result===null?'skipped':'success'):'';return `<article class="node ${selected===node.id?'selected':''} ${state}" data-id="${node.id}" style="left:${node.x}px;top:${node.y}px;--accent:${colors[def.group]}"><div class="node-header"><span class="node-symbol">${def.symbol}</span><div class="node-title">${node.type}<small>${esc(node.title)}</small></div><span class="node-menu">···</span></div><div class="node-preview ${def.group==='regex'?'pattern':''}">${esc(preview(node))}</div><div class="ports">${Array.from({length:Math.max(inputs.length,outputs.length)},(_,i)=>`<div class="port-row">${inputs[i]?portHTML(node,...inputs[i],'in'):'<span></span>'}${outputs[i]?portHTML(node,...outputs[i],'out'):'<span></span>'}</div>`).join('')}</div><div class="node-footer"><span>${def.group.toUpperCase()}</span><span>${hasResult?(result===null?'○ skipped':'✓ completed'):'● ready'}</span></div></article>`;}).join('');target.querySelectorAll('.node').forEach(el=>{el.onpointerdown=event=>{if(event.target.closest('.port'))return;event.stopPropagation();selectNode(el.dataset.id);if(event.button===0){const node=graph.nodes.find(n=>n.id===el.dataset.id);drag={kind:'node',id:node.id,x:event.clientX,y:event.clientY,startX:node.x,startY:node.y,moved:false};$('canvas').setPointerCapture(event.pointerId);}};});target.querySelectorAll('.port').forEach(port=>port.onpointerdown=event=>{event.stopPropagation();connectPort(port.dataset);});scheduleWires();}
-function selectNode(id){document.activeElement?.blur();selected=id;selectedEdge=-1;document.querySelectorAll('.node').forEach(el=>el.classList.toggle('selected',el.dataset.id===id));renderInspector();scheduleWires();}
-function scheduleWires(){cancelAnimationFrame(wireFrame);wireFrame=requestAnimationFrame(renderWires);}
-function portPosition(id,name,direction){const node=$('nodes').querySelector(`[data-id="${id}"]`);const port=node?.querySelector(`[data-port="${name}"][data-direction="${direction}"] .port-dot`);if(!port)return null;const rect=port.getBoundingClientRect(),canvas=$('canvas').getBoundingClientRect();return{x:(rect.left+rect.width/2-canvas.left-view.x)/view.scale,y:(rect.top+rect.height/2-canvas.top-view.y)/view.scale};}
-function renderWires(){let html='';graph.edges.forEach((edge,i)=>{const a=portPosition(edge.source,edge.out,'out'),b=portPosition(edge.target,edge.in,'in');if(!a||!b)return;const d=Math.max(60,Math.abs(b.x-a.x)*.45);const node=graph.nodes.find(n=>n.id===edge.source);html+=`<path class="wire ${edge.in==='gate'?'control-wire':''} ${selectedEdge===i?'selected':''}" data-edge="${i}" stroke="${portColor(nodeSpec(node)[1][edge.out])}" d="M${a.x} ${a.y} C${a.x+d} ${a.y},${b.x-d} ${b.y},${b.x} ${b.y}"/>`;});$('wires').innerHTML=html;$('wires').querySelectorAll('path').forEach(path=>path.onpointerdown=event=>{event.stopPropagation();selectedEdge=Number(path.dataset.edge);selected=null;document.querySelectorAll('.node').forEach(el=>el.classList.remove('selected'));renderWires();renderInspector();toast('已选中连接，按 Delete 删除');});}
-function connectPort(data){document.activeElement?.blur();if(data.direction==='out'){pendingPort={id:data.node,name:data.port};renderNodes();toast('请选择目标输入端口 · Esc 取消');return;}if(!pendingPort){toast('请先点击一个输出端口');return;}const edge=e(pendingPort.id,pendingPort.name,data.node,data.port);const source=graph.nodes.find(n=>n.id===edge.source),target=graph.nodes.find(n=>n.id===edge.target);const outType=nodeSpec(source)[1][edge.out],inType=edge.in==='gate'?'bool':nodeSpec(target)[0][edge.in];if(outType!=='any'&&inType!=='any'&&outType!==inType){toast(`类型不兼容：${outType} → ${inType}`);return;}const newEdges=graph.edges.filter(old=>!(old.target===edge.target&&old.in===edge.in));newEdges.push(edge);if(hasCycle(newEdges)){toast('不能形成环；请使用 Map / Loop 内部循环。');return;}checkpoint();graph.edges=newEdges;pendingPort=null;changed();renderNodes();renderInspector();toast('连接已建立');}
-function hasCycle(edges){const visited=new Set(),active=new Set();function visit(id){if(active.has(id))return true;if(visited.has(id))return false;active.add(id);for(const edge of edges.filter(e=>e.source===id))if(visit(edge.target))return true;active.delete(id);visited.add(id);return false;}return graph.nodes.some(n=>visit(n.id));}
-function renderInspector(){const node=graph.nodes.find(n=>n.id===selected);if(!node){$('inspector').innerHTML=selectedEdge>=0?'<div class="empty-inspector">已选中节点连接<br>按 Delete 删除连接</div>':'<div class="empty-inspector">◇<br>选择节点，查看参数与输出</div>';return;}const def=types[node.type],c=node.config;const field=(key,label,kind='text',help='')=>{let value=c[key];if(kind==='json')value=typeof value==='string'?JSON.stringify(value):JSON.stringify(value,null,2);return `<label class="field"><span class="field-label">${label}<small>${key}</small></span>${kind==='textarea'||kind==='code'||kind==='json'?`<textarea spellcheck="false" data-field="${key}" data-kind="${kind}" class="${kind==='code'?'code-input':''}">${esc(value)}</textarea>`:`<input data-field="${key}" data-kind="${kind}" value="${esc(value)}" ${kind==='number'?'type="number" min="1" max="100000"':''}>`}${help?`<div class="field-help">${help}</div>`:''}</label>`;};let fields='';if(node.type==='LoadText')fields+=field('text','输入文本','textarea');if(node.type==='Constant'||node.type==='Item')fields+=field('value','常量值','json','字符串需带双引号，其他值使用合法 JSON。');if(node.type.startsWith('Regex')){if(node.type==='RegexSwitch')fields+=field('rules','优先级规则','json');else fields+=field('pattern','正则表达式','textarea','Python re 语法 · 支持 (?P&lt;name&gt;…) 命名分组');if(!graph.edges.some(e=>e.target===node.id&&e.in==='text'))fields+=field('text','备用输入文本','textarea');if(node.type==='RegexSub')fields+=field('repl','替换内容');fields+='<div class="section-label">REGEX FLAGS <span>匹配选项</span></div><div class="flags">'+['IGNORECASE','MULTILINE','DOTALL','VERBOSE'].map(flag=>`<label class="flag"><input type="checkbox" data-flag="${flag}" ${(c.flags||[]).includes(flag)?'checked':''}>${flag}</label>`).join('')+'</div>';}
- if(node.type==='ImportModule')fields+=field('module','模块名称')+field('attribute','属性路径（可选）');if(node.type==='Module')fields+=field('name','模块名称')+field('code','模块源码','code');if(node.type==='Get')fields+=field('path','字段路径');if(node.type==='Switch')fields+=field('cases','匹配的类别','json');if(node.type==='If')fields+=`<label class="field"><span class="field-label">未连接时的条件</span><select data-field="condition" data-kind="bool"><option value="false" ${!c.condition?'selected':''}>False</option><option value="true" ${c.condition?'selected':''}>True</option></select></label>`;
- if(['Python','Map','Filter','Loop','Function'].includes(node.type)){if(node.type==='Function')fields+=field('name','输出函数名称');if(!c.body)fields+=field('code',node.type==='Function'?'函数定义':'Python 逻辑','code',node.type==='Function'?'定义命名函数，输出函数名称需与代码一致。':node.type==='Python'?'输入：value / items / text / index / acc / inputs · 输出：result':'输入：item / index / acc · 输出：result。连接 function 后优先执行回调。');if(['Map','Filter','Loop'].includes(node.type)){fields+=field('limit','最大迭代次数','number');fields+=`<button id="editSubgraph" class="subgraph-button">◈ ${c.body?'进入子画布':'建立可视化子图'} ↗</button><p class="field-help">子图使用 Item 接收单项，通过唯一的 Output 返回结果。优先级：函数回调 → 子图 → Python 逻辑。</p>${c.body?'<button id="removeSubgraph" class="remove-subgraph">移除子图，使用 Python 逻辑</button>':''}`;}}if(node.type==='Lambda')fields+=field('params','参数签名')+field('expression','返回表达式','textarea');if(node.type==='Call')fields+=field('args','位置参数 *args','json')+field('kwargs','关键字参数 **kwargs','json');if(node.type==='Assert')fields+=field('expected','预期结果','json');if(node.type==='Output')fields+=field('value','备用输出值','json');
- $('inspector').innerHTML=`<div class="selected-node-title" style="--accent:${colors[def.group]}"><span class="node-symbol">${def.symbol}</span><div><strong>${node.type}</strong><small>${esc(node.id)}</small></div></div><div class="node-description">${def.desc}</div><label class="field"><span class="field-label">节点名称<small>label</small></span><input id="nodeTitle" value="${esc(node.title)}"></label><div class="section-label">PARAMETERS <span>节点参数</span></div>${fields}<div class="section-label">OUTPUT SCHEMA <span>输出结构</span></div><div class="output-contract" style="--accent:${colors[def.group]}">${Object.entries(nodeSpec(node)[1]).map(([key,type])=>`<div class="contract-row"><span>${key}</span><small>${type}</small></div>`).join('')}</div><div class="field-help">◇ gate 为可选控制输入，只有 True 才执行。已连接的输入优先于参数默认值。</div><div class="inspector-actions"><button id="duplicateNode">⧉ 复制节点</button><button id="deleteNode">删除节点</button></div>`;
- if($('editSubgraph'))$('editSubgraph').onclick=()=>openSubgraph(node);
- if($('removeSubgraph'))$('removeSubgraph').onclick=()=>{checkpoint();delete c.body;changed();renderInspector();renderNodes();};
- $('nodeTitle').onfocus=event=>delete event.target.dataset.historySaved;$('nodeTitle').oninput=$('nodeTitle').onchange=event=>{if(node.title===event.target.value)return;editorCheckpoint(event.target);node.title=event.target.value;changed();renderNodes();};$('inspector').querySelectorAll('[data-field]').forEach(input=>{input.onfocus=()=>delete input.dataset.historySaved;input.oninput=input.onchange=event=>{let value=input.value;try{if(input.dataset.kind==='json')value=JSON.parse(value);if(input.dataset.field==='cases'&&(!Array.isArray(value)||value.length>30))throw Error('cases 必须是最多 30 项的列表');if(input.dataset.kind==='number'){value=Number(value);if(!Number.isInteger(value)||value<1||value>100000)throw Error('请输入 1–100000 的整数');}if(input.dataset.kind==='bool')value=value==='true';if(JSON.stringify(c[input.dataset.field])===JSON.stringify(value)){input.removeAttribute('aria-invalid');input.style.borderColor='';return;}editorCheckpoint(input);c[input.dataset.field]=value;if(node.type==='Switch'&&input.dataset.field==='cases'){const ports=nodeSpec(node)[1];graph.edges=graph.edges.filter(e=>e.source!==node.id||e.out in ports);}input.style.borderColor='';input.removeAttribute('aria-invalid');changed();renderNodes();}catch(error){input.style.borderColor='#db9292';input.setAttribute('aria-invalid','true');if(event.type==='change')toast('参数未保存：'+error.message);}};if(input.tagName==='TEXTAREA')input.onkeydown=event=>{if(event.key==='Tab'){event.preventDefault();const start=input.selectionStart,end=input.selectionEnd;input.setRangeText('    ',start,end,'end');}};});$('inspector').querySelectorAll('[data-flag]').forEach(input=>input.onchange=()=>{checkpoint();c.flags=[...$('inspector').querySelectorAll('[data-flag]:checked')].map(i=>i.dataset.flag);changed();renderNodes();});$('deleteNode').onclick=deleteSelection;$('duplicateNode').onclick=()=>{checkpoint();const copy=clone(node);copy.id=node.type.toLowerCase()+Date.now().toString(36);copy.x+=40;copy.y+=50;graph.nodes.push(copy);selected=copy.id;changed();renderNodes();renderInspector();};
+function toast(message) {
+  $("toast").textContent = message;
+  $("toast").classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => $("toast").classList.remove("show"), 5000);
 }
-function openSubgraph(node){
- checkpoint();
- if(!node.config.body)node.config.body={version:1,name:node.type+' 子图',nodes:[],edges:[]};
- scopeStack.push({graph,nodeId:node.id,history,future,selected,view:{...view}});graph=node.config.body;checkImported(graph);history=[];future=[];selected=graph.nodes[0]?.id;pendingPort=null;selectedEdge=-1;changed();showCanvas();renderNodes();renderInspector();requestAnimationFrame(fit);
+async function api(path, data) {
+  const response = await fetch("/api/" + path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  let result = await response.json();
+  if (!response.ok || (result.error && path !== "run"))
+    throw Error(result.error || "请求失败");
+  return result;
 }
-function closeSubgraph(){if(!scopeStack.length)return;syncScope();const parent=scopeStack.pop();graph=parent.graph;history=parent.history;future=parent.future;selected=parent.nodeId;view=parent.view;pendingPort=null;selectedEdge=-1;changed();showCanvas();renderNodes();renderInspector();applyView();}
-$('backScope').onclick=closeSubgraph;
-function deleteSelection(){if(selectedEdge>=0){checkpoint();graph.edges.splice(selectedEdge,1);selectedEdge=-1;}else if(selected){checkpoint();graph.nodes=graph.nodes.filter(n=>n.id!==selected);graph.edges=graph.edges.filter(e=>e.source!==selected&&e.target!==selected);selected=null;}else return;pendingPort=null;changed();renderNodes();renderInspector();}
-function applyView(){ $('world').style.transform=`translate(${view.x}px,${view.y}px) scale(${view.scale})`;$('zoomLabel').textContent=Math.round(view.scale*100)+'%';}
-function fit(){if(!graph.nodes.length){view={x:20,y:100,scale:1};applyView();return;}const rect=$('canvas').getBoundingClientRect();const minX=Math.min(...graph.nodes.map(n=>n.x)),minY=Math.min(...graph.nodes.map(n=>n.y));const maxX=Math.max(...graph.nodes.map(n=>n.x+245)),maxY=Math.max(...graph.nodes.map(n=>n.y+($('nodes').querySelector(`[data-id="${n.id}"]`)?.offsetHeight||260)));view.scale=Math.max(.22,Math.min(1,(rect.width-65)/(maxX-minX),(rect.height-125)/(maxY-minY)));view.x=(rect.width-(maxX-minX)*view.scale)/2-minX*view.scale;view.y=75-minY*view.scale+(rect.height-125-(maxY-minY)*view.scale)/2;applyView();scheduleWires();}
-function zoom(factor,x,y){const rect=$('canvas').getBoundingClientRect();x??=rect.width/2;y??=rect.height/2;const newScale=Math.max(.2,Math.min(1.8,view.scale*factor));view.x=x-(x-view.x)*newScale/view.scale;view.y=y-(y-view.y)*newScale/view.scale;view.scale=newScale;applyView();}
-function autoLayout(){checkpoint();const levels=new Map();function level(id){if(levels.has(id))return levels.get(id);const parents=graph.edges.filter(e=>e.target===id).map(e=>e.source);const l=parents.length?Math.max(...parents.map(level))+1:0;levels.set(id,l);return l;}const rows={};for(const node of graph.nodes){const l=level(node.id);const row=rows[l]||0;node.x=30+l*335;node.y=40+row*340;rows[l]=row+1;}changed();renderNodes();requestAnimationFrame(fit);}
-async function runGraph(){if(running)return;document.activeElement?.blur();if($('inspector').querySelector('[aria-invalid=true]')){toast('请先修正标红的参数，再运行。');return;}running=true;const snapshot=clone(graph),serialized=JSON.stringify(snapshot);$('runButton').disabled=true;$('runButton').innerHTML='<span>◌</span> 正在执行…';$('executionStatus').innerHTML='<span class="status-dot"></span> Python 运行中';$('executionStatus').classList.add('running');$('bottomStatus').textContent='正在执行工作流…';try{const result=await api('run',{graph:snapshot});if(JSON.stringify(graph)!==serialized){toast('运行完成，但画布已修改；请重新运行查看当前结果。');return;}run=result;$('consoleBody').closest('.console').classList.remove('collapsed');renderNodes();renderConsole();$('bottomStatus').textContent=result.ok?'运行完成 · '+result.duration+' ms':'运行失败';toast(result.ok?'工作流执行完成':'运行失败：'+result.error);}catch(error){run={ok:false,error:error.message,results:{}};renderConsole();toast(error.message);}finally{running=false;$('runButton').disabled=false;$('runButton').innerHTML='<span>▶</span> 运行工作流 <kbd>⌘ ↵</kbd>';$('executionStatus').classList.remove('running');}}
-function renderConsole(){const results=run?.results||{};$('resultCount').textContent=Object.values(results).filter(v=>v!==null).length;if(!run){$('executionStatus').innerHTML='<span class="status-dot"></span> 等待运行';$('consoleBody').innerHTML='<div class="console-empty"><span>▷</span><div>每一步，都看得见。<small>运行工作流，在这里查看节点输出与执行日志。</small></div><kbd>⌘ Enter</kbd></div>';return;}$('executionStatus').innerHTML=`<span class="green-dot" style="background:${run.ok?'#a7dfb9':'#df9797'}"></span>${run.ok?'执行成功':'执行失败'} · ${run.duration??'—'} ms`;$('consoleBody').innerHTML=(run.error?`<div class="error-message">${esc(run.error)}</div>`:'')+(activeConsole==='logs'?`<pre class="log-output">${esc(run.logs||'本次运行没有终端输出。')}</pre>`:Object.entries(results).map(([id,result])=>`<div class="result-row ${result===null?'skipped':''}"><span class="result-check">${result===null?'○':'✓'}</span><button data-result-node="${id}">${esc(graph.nodes.find(n=>n.id===id)?.title||id)}</button><pre>${result===null?'分支未激活 · skipped':esc(JSON.stringify(result,null,2))}</pre></div>`).join(''));$('consoleBody').querySelectorAll('[data-result-node]').forEach(button=>button.onclick=()=>selectNode(button.dataset.resultNode));}
-async function showCode(){document.activeElement?.blur();$('canvasView').hidden=true;$('codeView').hidden=false;$('canvasTab').classList.remove('active');$('codeTab').classList.add('active');$('codePreview').textContent='正在生成 Python…';try{const result=await api('export',{graph});codeSource=result.source;const lines=codeSource.split('\n');$('codePreview').textContent='# FlowPy graph metadata（下载文件中保留，支持无损还原）\n'+lines.slice(2).join('\n');}catch(error){$('codePreview').textContent=error.message;}}
-function showCanvas(){$('canvasView').hidden=false;$('codeView').hidden=true;$('canvasTab').classList.add('active');$('codeTab').classList.remove('active');scheduleWires();}
-function download(text,filename,type){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([text],{type}));a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-function checkImported(data){if(!data||!Array.isArray(data.nodes)||!Array.isArray(data.edges))throw Error('不是有效的工作流 JSON');for(const node of data.nodes){if(!types[node.type])throw Error('不支持的节点：'+node.type);if(!Number.isFinite(node.x)||!Number.isFinite(node.y)){node.x=30;node.y=80;}node.config={...clone(types[node.type].config),...(node.config||{})};node.title??=types[node.type].label;if(node.config.body)checkImported(node.config.body);}}
-async function doImport(){try{const source=$('importText').value.trim();if(!source)throw Error('请选择文件或粘贴内容');let result;if(source.startsWith('{')){const imported=JSON.parse(source);checkImported(imported);await api('validate',{graph:imported});result={graph:imported,message:'工作流 JSON 已导入。'};}else{result=await api('import',{source:$('importText').value});checkImported(result.graph);}checkpoint();graph=result.graph;selected=graph.nodes[0]?.id;selectedEdge=-1;changed();showCanvas();renderNodes();renderInspector();requestAnimationFrame(fit);$('importDialog').close();toast(result.message);}catch(error){toast(error.message);}}
-$('search').oninput=renderLibrary;$('undoButton').onclick=undo;$('redoButton').onclick=redo;$('zoomIn').onclick=()=>zoom(1.15);$('zoomOut').onclick=()=>zoom(1/1.15);$('fitButton').onclick=fit;$('layoutButton').onclick=autoLayout;$('runButton').onclick=runGraph;$('codeTab').onclick=showCode;$('canvasTab').onclick=showCanvas;$('importButton').onclick=()=>$('importDialog').showModal();$('stdinButton').onclick=()=>{$('stdinText').value=graph.stdin||'';$('stdinDialog').showModal();};$('saveStdin').onclick=()=>{checkpoint();graph.stdin=$('stdinText').value;changed();$('stdinDialog').close();toast('运行输入已保存，每行对应一次 input()。');};$('doImport').onclick=doImport;$('importFile').onchange=async event=>{const file=event.target.files[0];if(file){$('importText').value=await file.text();}};
-$('exportButton').onclick=async()=>{document.activeElement?.blur();try{const result=await api('export',{graph});download(result.source,(graph.name||'workflow')+'.py','text/x-python');toast('Python 已导出，包含可还原的图信息。');}catch(error){toast(error.message);}};
-$('copyCode').onclick=async()=>{try{await navigator.clipboard.writeText(codeSource);toast('完整 Python 代码已复制。');}catch{toast('剪贴板不可用，请使用导出 Python。');}};
-$('projectName').onfocus=event=>delete event.target.dataset.historySaved;$('projectName').oninput=$('projectName').onchange=event=>{const name=event.target.value||'未命名工作流';if(graph.name===name)return;editorCheckpoint(event.target);graph.name=name;changed();};$('clearButton').onclick=()=>{checkpoint();graph={version:1,name:'未命名工作流',nodes:[],edges:[]};selected=null;selectedEdge=-1;pendingPort=null;changed();renderNodes();renderInspector();fit();};
-$('examplesButton').onclick=()=>$('examplesDialog').showModal();function renderExamples(){$('examplesList').innerHTML=examples.map((example,i)=>`<button class="example-card" data-example="${i}">${example.week?`<span class="week-badge">W${example.week}</span>`:''}${esc(example.name)} <span style="float:right;color:#a7ebc5">↗</span><small>${esc(example.description)}${example.verified?' · ✓ 已通过 Python 测试':''}</small></button>`).join('');$('examplesList').querySelectorAll('[data-example]').forEach(button=>button.onclick=()=>{checkpoint();graph=clone(examples[Number(button.dataset.example)]);checkImported(graph);selected=graph.nodes[0].id;selectedEdge=-1;pendingPort=null;changed();showCanvas();renderNodes();renderInspector();requestAnimationFrame(fit);$('examplesDialog').close();});}
-$('toggleConsole').onclick=()=>{$('consoleBody').closest('.console').classList.toggle('collapsed');};document.querySelectorAll('[data-console]').forEach(button=>button.onclick=()=>{activeConsole=button.dataset.console;document.querySelectorAll('[data-console]').forEach(b=>b.classList.toggle('active',b===button));renderConsole();});
-$('canvas').onpointerdown=event=>{if(event.button!==0&&event.button!==1)return;if(event.target.closest('.node,.wire'))return;drag={kind:'pan',x:event.clientX,y:event.clientY,startX:view.x,startY:view.y};$('canvas').setPointerCapture(event.pointerId);};window.addEventListener('pointermove',event=>{if(!drag)return;const dx=event.clientX-drag.x,dy=event.clientY-drag.y;if(drag.kind==='pan'){view.x=drag.startX+dx;view.y=drag.startY+dy;applyView();}else{if(!drag.moved&&Math.abs(dx)+Math.abs(dy)<4)return;if(!drag.moved){checkpoint();drag.moved=true;}const node=graph.nodes.find(n=>n.id===drag.id);if(!node)return;node.x=Math.max(0,drag.startX+dx/view.scale);node.y=Math.max(0,drag.startY+dy/view.scale);const el=$('nodes').querySelector(`[data-id="${node.id}"]`);el.style.left=node.x+'px';el.style.top=node.y+'px';scheduleWires();}});window.addEventListener('pointerup',()=>{if(drag?.kind==='node'&&drag.moved)changed();drag=null;});$('canvas').addEventListener('wheel',event=>{event.preventDefault();const rect=$('canvas').getBoundingClientRect();zoom(Math.exp(-event.deltaY*.0015),event.clientX-rect.left,event.clientY-rect.top);},{passive:false});
-window.addEventListener('keydown',event=>{const editing=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName);if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){event.preventDefault();runGraph();return;}if(editing)return;if(event.key==='Escape'){pendingPort=null;renderNodes();}if(event.key==='Delete'||event.key==='Backspace'){event.preventDefault();deleteSelection();}if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='z'){event.preventDefault();event.shiftKey?redo():undo();}if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='s'){event.preventDefault();download(JSON.stringify(graph,null,2),(graph.name||'workflow')+'.json','application/json');toast('工作流 JSON 已保存。');}if(event.key==='/'){event.preventDefault();$('search').focus();}});
-async function init(){try{specs=await(await fetch('/api/specs')).json();const catalog=await(await fetch('/api/examples')).json();if(Array.isArray(catalog))examples.push(...catalog);renderExamples();const stored=localStorage.getItem('flowpy.graph');if(stored){try{const saved=JSON.parse(stored);checkImported(saved);if(saved.nodes.length||saved.edges.length)await api('validate',{graph:saved});graph=saved;selected=graph.nodes.find(n=>n.id==='match1')?.id||graph.nodes[0]?.id;}catch{/* Keep the working example if stored data is invalid. */}}renderLibrary();changed();renderNodes();renderInspector();requestAnimationFrame(()=>requestAnimationFrame(fit));new ResizeObserver(()=>scheduleWires()).observe($('canvas'));}catch(error){toast('无法连接 Python 服务：'+error.message);$('bottomStatus').textContent='服务未连接';}}
+async function showPackages() {
+  if (!$("packagesDialog").open) $("packagesDialog").showModal();
+  $("packagesList").textContent = "正在检查当前环境…";
+  try {
+    const response = await fetch("/api/packages");
+    const packages = await response.json();
+    if (!response.ok) throw Error(packages.error || "无法读取扩展目录");
+    $("packagesList").innerHTML = packages
+      .map(
+        (pkg) =>
+          `<div class="package-row"><div><code>${esc(pkg.name)}</code><small>${pkg.installed ? "当前环境已可用" : "尚未安装"}</small></div><button class="${pkg.installed ? "installed" : ""}" data-package="${esc(pkg.name)}" ${pkg.installed ? "disabled" : ""}>${pkg.installed ? "已安装 ✓" : "安装"}</button></div>`,
+      )
+      .join("");
+    $("packagesList").querySelectorAll("[data-package]").forEach((button) => {
+      button.onclick = async () => {
+        button.disabled = true;
+        button.textContent = "安装中…";
+        try {
+          const result = await api("packages/install", { name: button.dataset.package });
+          toast(result.message);
+          await showPackages();
+        } catch (error) {
+          button.disabled = false;
+          button.textContent = "重试安装";
+          toast(error.message);
+        }
+      };
+    });
+  } catch (error) {
+    $("packagesList").textContent = error.message;
+  }
+}
+function editorCheckpoint(input) {
+  if (!input.dataset.historySaved) {
+    checkpoint();
+    input.dataset.historySaved = "1";
+  }
+}
+function checkpoint() {
+  history.push(JSON.stringify(graph));
+  if (history.length > 70) history.shift();
+  future = [];
+}
+function changed() {
+  syncScope();
+  $("backScope").hidden = !scopeStack.length;
+  run = null;
+  codeSource = "";
+  $("saveStatus").textContent = "保存中…";
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try {
+      localStorage.setItem("flowpy.graph", JSON.stringify(syncScope()));
+      $("saveStatus").textContent = "已保存到本机";
+    } catch {
+      $("saveStatus").textContent = "本地保存失败";
+    }
+  }, 250);
+  $("canvasTitle").textContent = graph.name || "未命名工作流";
+  $("projectName").value = graph.name || "未命名工作流";
+  $("nodeCount").textContent = graph.nodes.length + " nodes";
+  $("undoButton").disabled = !history.length;
+  $("redoButton").disabled = !future.length;
+  renderConsole();
+}
+function restore(serialized) {
+  graph = JSON.parse(serialized);
+  selected = graph.nodes[0]?.id;
+  selectedEdge = -1;
+  pendingPort = null;
+  changed();
+  renderNodes();
+  renderInspector();
+  if (!$("codeView").hidden) showCode();
+}
+function undo() {
+  if (!history.length) return;
+  future.push(JSON.stringify(graph));
+  const prev = history.pop();
+  restore(prev);
+}
+function redo() {
+  if (!future.length) return;
+  history.push(JSON.stringify(graph));
+  restore(future.pop());
+}
+function renderLibrary() {
+  const query = $("search").value.toLowerCase();
+  $("library").innerHTML = groups
+    .map(([group, label, en]) => {
+      const entries = Object.entries(types).filter(
+        ([type, def]) =>
+          def.group === group &&
+          (type + def.label).toLowerCase().includes(query),
+      );
+      if (!entries.length) return "";
+      return `<section class="node-category"><div class="category-title"><span>${label}</span><span>${en}</span></div>${entries.map(([type, def]) => `<button class="library-node" data-type="${type}" style="--accent:${colors[group]}" title="添加 ${type}"><span class="node-symbol">${def.symbol}</span><span class="node-label">${type}<small>${def.label}</small></span><span class="add-sign">＋</span></button>`).join("")}</section>`;
+    })
+    .join("");
+  $("library")
+    .querySelectorAll("[data-type]")
+    .forEach((button) => (button.onclick = () => addNode(button.dataset.type)));
+}
+function addNode(type) {
+  checkpoint();
+  const id = type.toLowerCase() + Date.now().toString(36);
+  const rect = $("canvas").getBoundingClientRect();
+  const node = n(
+    id,
+    type,
+    Math.max(0, (rect.width / 2 - view.x) / view.scale - 122),
+    Math.max(0, (rect.height / 2 - view.y) / view.scale - 80),
+  );
+  graph.nodes.push(node);
+  selected = id;
+  changed();
+  renderNodes();
+  renderInspector();
+  toast("已添加 " + type);
+}
+function preview(node) {
+  const c = node.config;
+  switch (node.type) {
+    case "LoadText":
+      return c.text;
+    case "Item":
+    case "Constant":
+      return typeof c.value === "string" ? c.value : JSON.stringify(c.value);
+    case "RegexMatch":
+    case "RegexFindall":
+    case "RegexSplit":
+      return 'r"' + c.pattern + '"';
+    case "RegexSub":
+      return 'r"' + c.pattern + '" → ' + c.repl;
+    case "RegexSwitch":
+      return (c.rules || []).map((r) => `${r.pattern} → ${r.case}`).join("\n");
+    case "If":
+      return "if condition:\n    → true\nelse: → false";
+    case "Switch":
+      return "case in " + JSON.stringify(c.cases);
+    case "Get":
+      return "value." + c.path;
+    case "Lambda":
+      return `lambda ${c.params}:\n  ${c.expression}`;
+    case "ImportModule":
+      return "import " + c.module + (c.attribute ? "\n→ " + c.attribute : "");
+    case "Module":
+      return c.code;
+    case "Call":
+      return `function(*args, **kwargs)\nargs = ${JSON.stringify(c.args)}`;
+    case "Assert":
+      return "assert value == " + JSON.stringify(c.expected);
+    case "Output":
+      return graph.edges.some((e) => e.target === node.id && e.in === "value")
+        ? "接收上游结构化结果"
+        : JSON.stringify(c.value);
+    default:
+      return c.body
+        ? "◈ 可视化子图 · " + c.body.nodes.length + " 个节点"
+        : c.code;
+  }
+}
+function portColor(type) {
+  return (
+    {
+      bool: "#eccb8b",
+      str: "#c9acdd",
+      list: "#98c6e9",
+      dict: "#a7dfb9",
+      number: "#d6bc9a",
+      any: "#96a9bd",
+    }[type] || "#aabac1"
+  );
+}
+function portHTML(node, name, type, direction) {
+  return `<div class="port ${pendingPort?.id === node.id && pendingPort?.name === name && direction === "out" ? "connecting" : ""}" data-node="${node.id}" data-port="${name}" data-direction="${direction}" title="${name}: ${type}${name === "gate" ? " · 只有 True 时执行" : ""}" style="--port-color:${portColor(type)}"><i class="port-dot"></i>${direction === "out" ? `<small>${type}</small>` : ""}<span>${name === "gate" ? "◇ gate" : esc(name)}</span>${direction === "in" ? `<small>${type}</small>` : ""}</div>`;
+}
+function traceIndex(id) {
+  return (run?.trace || []).findIndex((event) => event.node === id);
+}
+function renderNodes() {
+  const target = $("nodes");
+  target.innerHTML = graph.nodes
+    .map((node) => {
+      const def = types[node.type],
+        spec = nodeSpec(node);
+      const inputs = Object.entries({ ...spec[0], gate: "bool" }),
+        outputs = Object.entries(spec[1]);
+      const result = run?.results?.[node.id];
+      const hasResult = run && Object.hasOwn(run.results || {}, node.id);
+      let state = hasResult ? (result === null ? "skipped" : "success") : "";
+      const index = traceIndex(node.id);
+      if (Number.isFinite(traceCursor) && index >= 0)
+        state +=
+          index === traceCursor
+            ? " trace-active"
+            : index > traceCursor
+              ? " trace-pending"
+              : "";
+      return `<article class="node ${selected === node.id ? "selected" : ""} ${state}" data-id="${node.id}" style="left:${node.x}px;top:${node.y}px;--accent:${colors[def.group]}"><div class="node-header"><span class="node-symbol">${def.symbol}</span><div class="node-title">${node.type}<small>${esc(node.title)}</small></div><span class="node-menu">···</span></div><div class="node-preview ${def.group === "regex" ? "pattern" : ""}">${esc(preview(node))}</div><div class="ports">${Array.from({ length: Math.max(inputs.length, outputs.length) }, (_, i) => `<div class="port-row">${inputs[i] ? portHTML(node, ...inputs[i], "in") : "<span></span>"}${outputs[i] ? portHTML(node, ...outputs[i], "out") : "<span></span>"}</div>`).join("")}</div><div class="node-footer"><span>${def.group.toUpperCase()}</span><span>${hasResult ? (result === null ? "○ skipped" : "✓ completed") : "● ready"}</span></div></article>`;
+    })
+    .join("");
+  target.querySelectorAll(".node").forEach((el) => {
+    el.onpointerdown = (event) => {
+      if (event.target.closest(".port")) return;
+      event.stopPropagation();
+      selectNode(el.dataset.id);
+      if (event.button === 0) {
+        const node = graph.nodes.find((n) => n.id === el.dataset.id);
+        drag = {
+          kind: "node",
+          id: node.id,
+          x: event.clientX,
+          y: event.clientY,
+          startX: node.x,
+          startY: node.y,
+          moved: false,
+        };
+        $("canvas").setPointerCapture(event.pointerId);
+      }
+    };
+  });
+  target.querySelectorAll(".port").forEach(
+    (port) =>
+      (port.onpointerdown = (event) => {
+        event.stopPropagation();
+        connectPort(port.dataset);
+      }),
+  );
+  scheduleWires();
+}
+function selectNode(id) {
+  document.activeElement?.blur();
+  selected = id;
+  selectedEdge = -1;
+  document
+    .querySelectorAll(".node")
+    .forEach((el) => el.classList.toggle("selected", el.dataset.id === id));
+  renderInspector();
+  scheduleWires();
+}
+function scheduleWires() {
+  cancelAnimationFrame(wireFrame);
+  wireFrame = requestAnimationFrame(renderWires);
+}
+function portPosition(id, name, direction) {
+  const node = $("nodes").querySelector(`[data-id="${id}"]`);
+  const port = node?.querySelector(
+    `[data-port="${name}"][data-direction="${direction}"] .port-dot`,
+  );
+  if (!port) return null;
+  const rect = port.getBoundingClientRect(),
+    canvas = $("canvas").getBoundingClientRect();
+  return {
+    x: (rect.left + rect.width / 2 - canvas.left - view.x) / view.scale,
+    y: (rect.top + rect.height / 2 - canvas.top - view.y) / view.scale,
+  };
+}
+function renderWires() {
+  let html = "";
+  graph.edges.forEach((edge, i) => {
+    const a = portPosition(edge.source, edge.out, "out"),
+      b = portPosition(edge.target, edge.in, "in");
+    if (!a || !b) return;
+    const d = Math.max(60, Math.abs(b.x - a.x) * 0.45);
+    const node = graph.nodes.find((n) => n.id === edge.source);
+    const sourceIndex = traceIndex(edge.source), targetIndex = traceIndex(edge.target);
+    const transferred = Number.isFinite(traceCursor) && sourceIndex >= 0 && sourceIndex <= traceCursor && (targetIndex < 0 || targetIndex >= sourceIndex);
+    html += `<path class="wire ${edge.in === "gate" ? "control-wire" : ""} ${run?.results && Object.hasOwn(run.results, edge.source) ? "previewable" : ""} ${transferred && sourceIndex === traceCursor ? "trace-active" : ""} ${selectedEdge === i ? "selected" : ""}" data-edge="${i}" stroke="${portColor(nodeSpec(node)[1][edge.out])}" d="M${a.x} ${a.y} C${a.x + d} ${a.y},${b.x - d} ${b.y},${b.x} ${b.y}"/>`;
+  });
+  $("wires").innerHTML = html;
+  $("wires")
+    .querySelectorAll("path")
+    .forEach(
+      (path) =>
+        (path.onpointerdown = (event) => {
+          event.stopPropagation();
+          selectedEdge = Number(path.dataset.edge);
+          selected = null;
+          document
+            .querySelectorAll(".node")
+            .forEach((el) => el.classList.remove("selected"));
+          renderWires();
+          renderInspector();
+          toast(run ? "连接数据已显示在右侧，可按 Delete 删除连接" : "运行后可在这里查看该连接的数据快照");
+        }),
+    );
+}
+function connectPort(data) {
+  document.activeElement?.blur();
+  if (data.direction === "out") {
+    pendingPort = { id: data.node, name: data.port };
+    renderNodes();
+    toast("请选择目标输入端口 · Esc 取消");
+    return;
+  }
+  if (!pendingPort) {
+    toast("请先点击一个输出端口");
+    return;
+  }
+  const edge = e(pendingPort.id, pendingPort.name, data.node, data.port);
+  const source = graph.nodes.find((n) => n.id === edge.source),
+    target = graph.nodes.find((n) => n.id === edge.target);
+  const outType = nodeSpec(source)[1][edge.out],
+    inType = edge.in === "gate" ? "bool" : nodeSpec(target)[0][edge.in];
+  if (outType !== "any" && inType !== "any" && outType !== inType) {
+    toast(`类型不兼容：${outType} → ${inType}`);
+    return;
+  }
+  const newEdges = graph.edges.filter(
+    (old) => !(old.target === edge.target && old.in === edge.in),
+  );
+  newEdges.push(edge);
+  if (hasCycle(newEdges)) {
+    toast("不能形成环；请使用 Map / Loop 内部循环。");
+    return;
+  }
+  checkpoint();
+  graph.edges = newEdges;
+  pendingPort = null;
+  changed();
+  renderNodes();
+  renderInspector();
+  toast("连接已建立");
+}
+function hasCycle(edges) {
+  const visited = new Set(),
+    active = new Set();
+  function visit(id) {
+    if (active.has(id)) return true;
+    if (visited.has(id)) return false;
+    active.add(id);
+    for (const edge of edges.filter((e) => e.source === id))
+      if (visit(edge.target)) return true;
+    active.delete(id);
+    visited.add(id);
+    return false;
+  }
+  return graph.nodes.some((n) => visit(n.id));
+}
+function renderInspector() {
+  const node = graph.nodes.find((n) => n.id === selected);
+  if (!node) {
+    if (selectedEdge >= 0) {
+      const edge = graph.edges[selectedEdge];
+      const source = graph.nodes.find((item) => item.id === edge?.source);
+      const target = graph.nodes.find((item) => item.id === edge?.target);
+      const value = run?.results?.[edge?.source]?.[edge?.out];
+      const hasValue = !!edge && run?.results && Object.hasOwn(run.results, edge.source) && run.results[edge.source] !== null;
+      $("inspector").innerHTML = `<div class="edge-preview"><h3>中间数据预览</h3><p>${esc(source?.title || edge?.source || "上游")} · <code>${esc(edge?.out || "")}</code> → ${esc(target?.title || edge?.target || "下游")} · <code>${esc(edge?.in || "")}</code></p>${hasValue ? `<pre>${esc(JSON.stringify(value, null, 2))}</pre>` : '<div class="empty-value">尚未运行，或上游分支未激活。运行工作流后，点击此连线查看真实输出快照。</div>'}<div class="inspector-actions"><button id="deleteEdge">删除连接</button></div></div>`;
+      $("deleteEdge").onclick = deleteSelection;
+      return;
+    }
+    $("inspector").innerHTML =
+      '<div class="empty-inspector">◇<br>选择节点，查看参数与输出<br><br>点击连线，预览中间数据</div>';
+    return;
+  }
+  const def = types[node.type],
+    c = node.config;
+  const field = (key, label, kind = "text", help = "") => {
+    let value = c[key];
+    if (kind === "json")
+      value =
+        typeof value === "string"
+          ? JSON.stringify(value)
+          : JSON.stringify(value, null, 2);
+    return `<label class="field"><span class="field-label">${label}<small>${key}</small></span>${kind === "textarea" || kind === "code" || kind === "json" ? `<textarea spellcheck="false" data-field="${key}" data-kind="${kind}" class="${kind === "code" ? "code-input" : ""}">${esc(value)}</textarea>` : `<input data-field="${key}" data-kind="${kind}" value="${esc(value)}" ${kind === "number" ? 'type="number" min="1" max="100000"' : ""}>`}${help ? `<div class="field-help">${help}</div>` : ""}</label>`;
+  };
+  let fields = "";
+  if (node.type === "LoadText") fields += field("text", "输入文本", "textarea");
+  if (node.type === "Constant" || node.type === "Item")
+    fields += field(
+      "value",
+      "常量值",
+      "json",
+      "字符串需带双引号，其他值使用合法 JSON。",
+    );
+  if (node.type.startsWith("Regex")) {
+    if (node.type === "RegexSwitch")
+      fields += field("rules", "优先级规则", "json");
+    else
+      fields += field(
+        "pattern",
+        "正则表达式",
+        "textarea",
+        "Python re 语法 · 支持 (?P&lt;name&gt;…) 命名分组",
+      );
+    if (!graph.edges.some((e) => e.target === node.id && e.in === "text"))
+      fields += field("text", "备用输入文本", "textarea");
+    if (node.type === "RegexSub") fields += field("repl", "替换内容");
+    fields +=
+      '<div class="section-label">REGEX FLAGS <span>匹配选项</span></div><div class="flags">' +
+      ["IGNORECASE", "MULTILINE", "DOTALL", "VERBOSE"]
+        .map(
+          (flag) =>
+            `<label class="flag"><input type="checkbox" data-flag="${flag}" ${(c.flags || []).includes(flag) ? "checked" : ""}>${flag}</label>`,
+        )
+        .join("") +
+      "</div>";
+  }
+  if (node.type === "ImportModule")
+    fields +=
+      field("module", "模块名称") + field("attribute", "属性路径（可选）");
+  if (node.type === "Module")
+    fields += field("name", "模块名称") + field("code", "模块源码", "code");
+  if (node.type === "Get") fields += field("path", "字段路径");
+  if (node.type === "Switch") fields += field("cases", "匹配的类别", "json");
+  if (node.type === "If")
+    fields += `<label class="field"><span class="field-label">未连接时的条件</span><select data-field="condition" data-kind="bool"><option value="false" ${!c.condition ? "selected" : ""}>False</option><option value="true" ${c.condition ? "selected" : ""}>True</option></select></label>`;
+  if (["Python", "Map", "Filter", "Loop", "Function"].includes(node.type)) {
+    if (node.type === "Function") fields += field("name", "输出函数名称");
+    if (!c.body)
+      fields += field(
+        "code",
+        node.type === "Function" ? "函数定义" : "Python 逻辑",
+        "code",
+        node.type === "Function"
+          ? "定义命名函数，输出函数名称需与代码一致。"
+          : node.type === "Python"
+            ? "输入：value / items / text / index / acc / inputs · 输出：result"
+            : "输入：item / index / acc · 输出：result。连接 function 后优先执行回调。",
+      );
+    if (["Map", "Filter", "Loop"].includes(node.type)) {
+      fields += field("limit", "最大迭代次数", "number");
+      fields += `<button id="editSubgraph" class="subgraph-button">◈ ${c.body ? "进入子画布" : "建立可视化子图"} ↗</button><p class="field-help">子图使用 Item 接收单项，通过唯一的 Output 返回结果。优先级：函数回调 → 子图 → Python 逻辑。</p>${c.body ? '<button id="removeSubgraph" class="remove-subgraph">移除子图，使用 Python 逻辑</button>' : ""}`;
+    }
+  }
+  if (node.type === "Lambda")
+    fields +=
+      field("params", "参数签名") +
+      field("expression", "返回表达式", "textarea");
+  if (node.type === "Call")
+    fields +=
+      field("args", "位置参数 *args", "json") +
+      field("kwargs", "关键字参数 **kwargs", "json");
+  if (node.type === "Assert") fields += field("expected", "预期结果", "json");
+  if (node.type === "Output") fields += field("value", "备用输出值", "json");
+  $("inspector").innerHTML =
+    `<div class="selected-node-title" style="--accent:${colors[def.group]}"><span class="node-symbol">${def.symbol}</span><div><strong>${node.type}</strong><small>${esc(node.id)}</small></div></div><div class="node-description">${def.desc}</div><label class="field"><span class="field-label">节点名称<small>label</small></span><input id="nodeTitle" value="${esc(node.title)}"></label><div class="section-label">PARAMETERS <span>节点参数</span></div>${fields}<div class="section-label">OUTPUT SCHEMA <span>输出结构</span></div><div class="output-contract" style="--accent:${colors[def.group]}">${Object.entries(
+      nodeSpec(node)[1],
+    )
+      .map(
+        ([key, type]) =>
+          `<div class="contract-row"><span>${key}</span><small>${type}</small></div>`,
+      )
+      .join(
+        "",
+      )}</div><div class="field-help">◇ gate 为可选控制输入，只有 True 才执行。已连接的输入优先于参数默认值。</div><div class="inspector-actions"><button id="duplicateNode">⧉ 复制节点</button><button id="deleteNode">删除节点</button></div>`;
+  if ($("editSubgraph")) $("editSubgraph").onclick = () => openSubgraph(node);
+  if ($("removeSubgraph"))
+    $("removeSubgraph").onclick = () => {
+      checkpoint();
+      delete c.body;
+      changed();
+      renderInspector();
+      renderNodes();
+    };
+  $("nodeTitle").onfocus = (event) => delete event.target.dataset.historySaved;
+  $("nodeTitle").oninput = $("nodeTitle").onchange = (event) => {
+    if (node.title === event.target.value) return;
+    editorCheckpoint(event.target);
+    node.title = event.target.value;
+    changed();
+    renderNodes();
+  };
+  $("inspector")
+    .querySelectorAll("[data-field]")
+    .forEach((input) => {
+      input.onfocus = () => delete input.dataset.historySaved;
+      input.oninput = input.onchange = (event) => {
+        let value = input.value;
+        try {
+          if (input.dataset.kind === "json") value = JSON.parse(value);
+          if (
+            input.dataset.field === "cases" &&
+            (!Array.isArray(value) || value.length > 30)
+          )
+            throw Error("cases 必须是最多 30 项的列表");
+          if (input.dataset.kind === "number") {
+            value = Number(value);
+            if (!Number.isInteger(value) || value < 1 || value > 100000)
+              throw Error("请输入 1–100000 的整数");
+          }
+          if (input.dataset.kind === "bool") value = value === "true";
+          if (
+            JSON.stringify(c[input.dataset.field]) === JSON.stringify(value)
+          ) {
+            input.removeAttribute("aria-invalid");
+            input.style.borderColor = "";
+            return;
+          }
+          editorCheckpoint(input);
+          c[input.dataset.field] = value;
+          if (node.type === "Switch" && input.dataset.field === "cases") {
+            const ports = nodeSpec(node)[1];
+            graph.edges = graph.edges.filter(
+              (e) => e.source !== node.id || e.out in ports,
+            );
+          }
+          input.style.borderColor = "";
+          input.removeAttribute("aria-invalid");
+          changed();
+          renderNodes();
+        } catch (error) {
+          input.style.borderColor = "#db9292";
+          input.setAttribute("aria-invalid", "true");
+          if (event.type === "change") toast("参数未保存：" + error.message);
+        }
+      };
+      if (input.tagName === "TEXTAREA")
+        input.onkeydown = (event) => {
+          if (event.key === "Tab") {
+            event.preventDefault();
+            const start = input.selectionStart,
+              end = input.selectionEnd;
+            input.setRangeText("    ", start, end, "end");
+          }
+        };
+    });
+  $("inspector")
+    .querySelectorAll("[data-flag]")
+    .forEach(
+      (input) =>
+        (input.onchange = () => {
+          checkpoint();
+          c.flags = [
+            ...$("inspector").querySelectorAll("[data-flag]:checked"),
+          ].map((i) => i.dataset.flag);
+          changed();
+          renderNodes();
+        }),
+    );
+  $("deleteNode").onclick = deleteSelection;
+  $("duplicateNode").onclick = () => {
+    checkpoint();
+    const copy = clone(node);
+    copy.id = node.type.toLowerCase() + Date.now().toString(36);
+    copy.x += 40;
+    copy.y += 50;
+    graph.nodes.push(copy);
+    selected = copy.id;
+    changed();
+    renderNodes();
+    renderInspector();
+  };
+}
+function openSubgraph(node) {
+  checkpoint();
+  if (!node.config.body)
+    node.config.body = {
+      version: 1,
+      name: node.type + " 子图",
+      nodes: [],
+      edges: [],
+    };
+  scopeStack.push({
+    graph,
+    nodeId: node.id,
+    history,
+    future,
+    selected,
+    view: { ...view },
+  });
+  graph = node.config.body;
+  checkImported(graph);
+  history = [];
+  future = [];
+  selected = graph.nodes[0]?.id;
+  pendingPort = null;
+  selectedEdge = -1;
+  changed();
+  showCanvas();
+  renderNodes();
+  renderInspector();
+  requestAnimationFrame(fit);
+}
+function closeSubgraph() {
+  if (!scopeStack.length) return;
+  syncScope();
+  const parent = scopeStack.pop();
+  graph = parent.graph;
+  history = parent.history;
+  future = parent.future;
+  selected = parent.nodeId;
+  view = parent.view;
+  pendingPort = null;
+  selectedEdge = -1;
+  changed();
+  showCanvas();
+  renderNodes();
+  renderInspector();
+  applyView();
+}
+$("backScope").onclick = closeSubgraph;
+function deleteSelection() {
+  if (selectedEdge >= 0) {
+    checkpoint();
+    graph.edges.splice(selectedEdge, 1);
+    selectedEdge = -1;
+  } else if (selected) {
+    checkpoint();
+    graph.nodes = graph.nodes.filter((n) => n.id !== selected);
+    graph.edges = graph.edges.filter(
+      (e) => e.source !== selected && e.target !== selected,
+    );
+    selected = null;
+  } else return;
+  pendingPort = null;
+  changed();
+  renderNodes();
+  renderInspector();
+}
+function applyView() {
+  $("world").style.transform =
+    `translate(${view.x}px,${view.y}px) scale(${view.scale})`;
+  $("zoomLabel").textContent = Math.round(view.scale * 100) + "%";
+}
+function fit() {
+  if (!graph.nodes.length) {
+    view = { x: 20, y: 100, scale: 1 };
+    applyView();
+    return;
+  }
+  const rect = $("canvas").getBoundingClientRect();
+  const minX = Math.min(...graph.nodes.map((n) => n.x)),
+    minY = Math.min(...graph.nodes.map((n) => n.y));
+  const maxX = Math.max(...graph.nodes.map((n) => n.x + 245)),
+    maxY = Math.max(
+      ...graph.nodes.map(
+        (n) =>
+          n.y +
+          ($("nodes").querySelector(`[data-id="${n.id}"]`)?.offsetHeight ||
+            260),
+      ),
+    );
+  view.scale = Math.max(
+    0.22,
+    Math.min(
+      1,
+      (rect.width - 65) / (maxX - minX),
+      (rect.height - 125) / (maxY - minY),
+    ),
+  );
+  view.x = (rect.width - (maxX - minX) * view.scale) / 2 - minX * view.scale;
+  view.y =
+    75 -
+    minY * view.scale +
+    (rect.height - 125 - (maxY - minY) * view.scale) / 2;
+  applyView();
+  scheduleWires();
+}
+function zoom(factor, x, y) {
+  const rect = $("canvas").getBoundingClientRect();
+  x ??= rect.width / 2;
+  y ??= rect.height / 2;
+  const newScale = Math.max(0.2, Math.min(1.8, view.scale * factor));
+  view.x = x - ((x - view.x) * newScale) / view.scale;
+  view.y = y - ((y - view.y) * newScale) / view.scale;
+  view.scale = newScale;
+  applyView();
+}
+function autoLayout() {
+  checkpoint();
+  const levels = new Map();
+  function level(id) {
+    if (levels.has(id)) return levels.get(id);
+    const parents = graph.edges
+      .filter((e) => e.target === id)
+      .map((e) => e.source);
+    const l = parents.length ? Math.max(...parents.map(level)) + 1 : 0;
+    levels.set(id, l);
+    return l;
+  }
+  const rows = {};
+  for (const node of graph.nodes) {
+    const l = level(node.id);
+    const row = rows[l] || 0;
+    node.x = 30 + l * 335;
+    node.y = 40 + row * 340;
+    rows[l] = row + 1;
+  }
+  changed();
+  renderNodes();
+  requestAnimationFrame(fit);
+}
+async function runGraph() {
+  if (running) return;
+  document.activeElement?.blur();
+  if ($("inspector").querySelector("[aria-invalid=true]")) {
+    toast("请先修正标红的参数，再运行。");
+    return;
+  }
+  running = true;
+  const snapshot = clone(graph),
+    serialized = JSON.stringify(snapshot);
+  $("runButton").disabled = true;
+  $("runButton").innerHTML = "<span>◌</span> 正在执行…";
+  $("executionStatus").innerHTML =
+    '<span class="status-dot"></span> Python 运行中';
+  $("executionStatus").classList.add("running");
+  $("bottomStatus").textContent = "正在执行工作流…";
+  try {
+    const result = await api("run", { graph: snapshot });
+    if (JSON.stringify(graph) !== serialized) {
+      toast("运行完成，但画布已修改；请重新运行查看当前结果。");
+      return;
+    }
+    run = result;
+    $("consoleBody").closest(".console").classList.remove("collapsed");
+    await replayTrace(result.trace || []);
+    renderNodes();
+    renderConsole();
+    $("bottomStatus").textContent = result.ok
+      ? "运行完成 · " + result.duration + " ms"
+      : "运行失败";
+    toast(result.ok ? "工作流执行完成" : "运行失败：" + result.error);
+  } catch (error) {
+    run = { ok: false, error: error.message, results: {} };
+    renderConsole();
+    toast(error.message);
+  } finally {
+    running = false;
+    $("runButton").disabled = false;
+    $("runButton").innerHTML = "<span>▶</span> 运行工作流 <kbd>⌘ ↵</kbd>";
+    $("executionStatus").classList.remove("running");
+  }
+}
+async function replayTrace(trace) {
+  clearTimeout(traceTimer);
+  if (!trace.length) return;
+  traceCursor = -1;
+  renderNodes();
+  for (let index = 0; index < trace.length; index++) {
+    traceCursor = index;
+    $("executionStatus").innerHTML = `<span class="status-dot"></span> 执行路径 ${index + 1} / ${trace.length} · ${esc(trace[index].node)}`;
+    renderNodes();
+    await new Promise((resolve) => {
+      traceTimer = setTimeout(resolve, Math.min(520, Math.max(250, 1100 / trace.length)));
+    });
+  }
+  traceCursor = Infinity;
+  renderNodes();
+}
+function renderConsole() {
+  const results = run?.results || {};
+  $("resultCount").textContent = Object.values(results).filter(
+    (v) => v !== null,
+  ).length;
+  if (!run) {
+    $("executionStatus").innerHTML =
+      '<span class="status-dot"></span> 等待运行';
+    $("consoleBody").innerHTML =
+      '<div class="console-empty"><span>▷</span><div>每一步，都看得见。<small>运行工作流，在这里查看节点输出与执行日志。</small></div><kbd>⌘ Enter</kbd></div>';
+    return;
+  }
+  $("executionStatus").innerHTML =
+    `<span class="green-dot" style="background:${run.ok ? "#a7dfb9" : "#df9797"}"></span>${run.ok ? "执行成功" : "执行失败"} · ${run.duration ?? "—"} ms`;
+  $("consoleBody").innerHTML =
+    (run.error ? `<div class="error-message">${esc(run.error)}</div>` : "") +
+    (activeConsole === "logs"
+      ? `<pre class="log-output">${esc(run.logs || "本次运行没有终端输出。")}</pre>`
+      : Object.entries(results)
+          .map(
+            ([id, result]) =>
+              `<div class="result-row ${result === null ? "skipped" : ""}"><span class="result-check">${result === null ? "○" : "✓"}</span><button data-result-node="${id}">${esc(graph.nodes.find((n) => n.id === id)?.title || id)}</button><pre>${result === null ? "分支未激活 · skipped" : esc(JSON.stringify(result, null, 2))}</pre></div>`,
+          )
+          .join(""));
+  $("consoleBody")
+    .querySelectorAll("[data-result-node]")
+    .forEach(
+      (button) =>
+        (button.onclick = () => selectNode(button.dataset.resultNode)),
+    );
+}
+async function showCode() {
+  document.activeElement?.blur();
+  $("canvasView").hidden = true;
+  $("codeView").hidden = false;
+  $("canvasTab").classList.remove("active");
+  $("codeTab").classList.add("active");
+  $("codePreview").textContent = "正在生成 Python…";
+  try {
+    const result = await api("export", { graph });
+    codeSource = result.source;
+    const lines = codeSource.split("\n");
+    $("codePreview").textContent =
+      "# FlowPy graph metadata（下载文件中保留，支持无损还原）\n" +
+      lines.slice(2).join("\n");
+  } catch (error) {
+    $("codePreview").textContent = error.message;
+  }
+}
+function showCanvas() {
+  $("canvasView").hidden = false;
+  $("codeView").hidden = true;
+  $("canvasTab").classList.add("active");
+  $("codeTab").classList.remove("active");
+  scheduleWires();
+}
+function download(text, filename, type) {
+  const a = document.createElement("a"),
+    url = URL.createObjectURL(new Blob([text], { type }));
+  a.href = url;
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function checkImported(data) {
+  if (!data || !Array.isArray(data.nodes) || !Array.isArray(data.edges))
+    throw Error("不是有效的工作流 JSON");
+  for (const node of data.nodes) {
+    if (!types[node.type]) throw Error("不支持的节点：" + node.type);
+    if (!Number.isFinite(node.x) || !Number.isFinite(node.y)) {
+      node.x = 30;
+      node.y = 80;
+    }
+    node.config = { ...clone(types[node.type].config), ...(node.config || {}) };
+    node.title ??= types[node.type].label;
+    if (node.config.body) checkImported(node.config.body);
+  }
+}
+async function doImport() {
+  try {
+    const source = $("importText").value.trim();
+    if (!source) throw Error("请选择文件或粘贴内容");
+    let result;
+    if (source.startsWith("{")) {
+      const imported = JSON.parse(source);
+      checkImported(imported);
+      await api("validate", { graph: imported });
+      result = { graph: imported, message: "工作流 JSON 已导入。" };
+    } else {
+      result = await api("import", { source: $("importText").value });
+      checkImported(result.graph);
+    }
+    checkpoint();
+    graph = result.graph;
+    selected = graph.nodes[0]?.id;
+    selectedEdge = -1;
+    changed();
+    showCanvas();
+    renderNodes();
+    renderInspector();
+    requestAnimationFrame(fit);
+    $("importDialog").close();
+    toast(result.message);
+  } catch (error) {
+    toast(error.message);
+  }
+}
+$("search").oninput = renderLibrary;
+$("undoButton").onclick = undo;
+$("redoButton").onclick = redo;
+$("zoomIn").onclick = () => zoom(1.15);
+$("zoomOut").onclick = () => zoom(1 / 1.15);
+$("fitButton").onclick = fit;
+$("layoutButton").onclick = autoLayout;
+$("runButton").onclick = runGraph;
+$("codeTab").onclick = showCode;
+$("canvasTab").onclick = showCanvas;
+$("importButton").onclick = () => $("importDialog").showModal();
+$("packagesButton").onclick = showPackages;
+$("stdinButton").onclick = () => {
+  $("stdinText").value = graph.stdin || "";
+  $("stdinDialog").showModal();
+};
+$("saveStdin").onclick = () => {
+  checkpoint();
+  graph.stdin = $("stdinText").value;
+  changed();
+  $("stdinDialog").close();
+  toast("运行输入已保存，每行对应一次 input()。");
+};
+$("doImport").onclick = doImport;
+$("importFile").onchange = async (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    $("importText").value = await file.text();
+  }
+};
+$("exportButton").onclick = async () => {
+  document.activeElement?.blur();
+  try {
+    const result = await api("export", { graph });
+    download(
+      result.source,
+      (graph.name || "workflow") + ".py",
+      "text/x-python",
+    );
+    toast("Python 已导出，包含可还原的图信息。");
+  } catch (error) {
+    toast(error.message);
+  }
+};
+$("copyCode").onclick = async () => {
+  try {
+    await navigator.clipboard.writeText(codeSource);
+    toast("完整 Python 代码已复制。");
+  } catch {
+    toast("剪贴板不可用，请使用导出 Python。");
+  }
+};
+$("projectName").onfocus = (event) => delete event.target.dataset.historySaved;
+$("projectName").oninput = $("projectName").onchange = (event) => {
+  const name = event.target.value || "未命名工作流";
+  if (graph.name === name) return;
+  editorCheckpoint(event.target);
+  graph.name = name;
+  changed();
+};
+$("clearButton").onclick = () => {
+  checkpoint();
+  graph = { version: 1, name: "未命名工作流", nodes: [], edges: [] };
+  selected = null;
+  selectedEdge = -1;
+  pendingPort = null;
+  changed();
+  renderNodes();
+  renderInspector();
+  fit();
+};
+$("examplesButton").onclick = () => $("examplesDialog").showModal();
+function renderExamples() {
+  $("examplesList").innerHTML = examples
+    .map(
+      (example, i) =>
+        `<button class="example-card" data-example="${i}">${example.week ? `<span class="week-badge">W${example.week}</span>` : ""}${esc(example.name)} <span style="float:right;color:#a7ebc5">↗</span><small>${esc(example.description)}${example.verified ? " · ✓ 已通过 Python 测试" : ""}</small></button>`,
+    )
+    .join("");
+  $("examplesList")
+    .querySelectorAll("[data-example]")
+    .forEach(
+      (button) =>
+        (button.onclick = () => {
+          checkpoint();
+          graph = clone(examples[Number(button.dataset.example)]);
+          checkImported(graph);
+          selected = graph.nodes[0].id;
+          selectedEdge = -1;
+          pendingPort = null;
+          changed();
+          showCanvas();
+          renderNodes();
+          renderInspector();
+          requestAnimationFrame(fit);
+          $("examplesDialog").close();
+        }),
+    );
+}
+$("toggleConsole").onclick = () => {
+  $("consoleBody").closest(".console").classList.toggle("collapsed");
+};
+document.querySelectorAll("[data-console]").forEach(
+  (button) =>
+    (button.onclick = () => {
+      activeConsole = button.dataset.console;
+      document
+        .querySelectorAll("[data-console]")
+        .forEach((b) => b.classList.toggle("active", b === button));
+      renderConsole();
+    }),
+);
+$("canvas").onpointerdown = (event) => {
+  if (event.button !== 0 && event.button !== 1) return;
+  if (event.target.closest(".node,.wire")) return;
+  drag = {
+    kind: "pan",
+    x: event.clientX,
+    y: event.clientY,
+    startX: view.x,
+    startY: view.y,
+  };
+  $("canvas").setPointerCapture(event.pointerId);
+};
+window.addEventListener("pointermove", (event) => {
+  if (!drag) return;
+  const dx = event.clientX - drag.x,
+    dy = event.clientY - drag.y;
+  if (drag.kind === "pan") {
+    view.x = drag.startX + dx;
+    view.y = drag.startY + dy;
+    applyView();
+  } else {
+    if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 4) return;
+    if (!drag.moved) {
+      checkpoint();
+      drag.moved = true;
+    }
+    const node = graph.nodes.find((n) => n.id === drag.id);
+    if (!node) return;
+    node.x = Math.max(0, drag.startX + dx / view.scale);
+    node.y = Math.max(0, drag.startY + dy / view.scale);
+    const el = $("nodes").querySelector(`[data-id="${node.id}"]`);
+    el.style.left = node.x + "px";
+    el.style.top = node.y + "px";
+    scheduleWires();
+  }
+});
+window.addEventListener("pointerup", () => {
+  if (drag?.kind === "node" && drag.moved) changed();
+  drag = null;
+});
+$("canvas").addEventListener(
+  "wheel",
+  (event) => {
+    event.preventDefault();
+    const rect = $("canvas").getBoundingClientRect();
+    zoom(
+      Math.exp(-event.deltaY * 0.0015),
+      event.clientX - rect.left,
+      event.clientY - rect.top,
+    );
+  },
+  { passive: false },
+);
+window.addEventListener("keydown", (event) => {
+  const editing = ["INPUT", "TEXTAREA", "SELECT"].includes(
+    document.activeElement?.tagName,
+  );
+  if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+    event.preventDefault();
+    runGraph();
+    return;
+  }
+  if (editing) return;
+  if (event.key === "Escape") {
+    pendingPort = null;
+    renderNodes();
+  }
+  if (event.key === "Delete" || event.key === "Backspace") {
+    event.preventDefault();
+    deleteSelection();
+  }
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "z") {
+    event.preventDefault();
+    event.shiftKey ? redo() : undo();
+  }
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
+    event.preventDefault();
+    download(
+      JSON.stringify(graph, null, 2),
+      (graph.name || "workflow") + ".json",
+      "application/json",
+    );
+    toast("工作流 JSON 已保存。");
+  }
+  if (event.key === "/") {
+    event.preventDefault();
+    $("search").focus();
+  }
+});
+async function init() {
+  try {
+    specs = await (await fetch("/api/specs")).json();
+    const catalog = await (await fetch("/api/examples")).json();
+    if (Array.isArray(catalog)) examples.push(...catalog);
+    renderExamples();
+    const stored = localStorage.getItem("flowpy.graph");
+    if (stored) {
+      try {
+        const saved = JSON.parse(stored);
+        checkImported(saved);
+        if (saved.nodes.length || saved.edges.length)
+          await api("validate", { graph: saved });
+        graph = saved;
+        selected =
+          graph.nodes.find((n) => n.id === "match1")?.id || graph.nodes[0]?.id;
+      } catch {
+        /* Keep the working example if stored data is invalid. */
+      }
+    }
+    renderLibrary();
+    changed();
+    renderNodes();
+    renderInspector();
+    requestAnimationFrame(() => requestAnimationFrame(fit));
+    new ResizeObserver(() => scheduleWires()).observe($("canvas"));
+  } catch (error) {
+    toast("无法连接 Python 服务：" + error.message);
+    $("bottomStatus").textContent = "服务未连接";
+  }
+}
 init();

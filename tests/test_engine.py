@@ -94,6 +94,23 @@ class EngineTests(unittest.TestCase):
         self.assertIn('bad',result['error'])
         self.assertEqual(result['results']['a']['value'],1)
 
+    def test_execution_trace_preserves_topological_order_and_skips(self):
+        g = graph([
+            node('branch', 'If', condition=False),
+            node('inactive', 'Python', code='result = "never"'),
+            node('output', 'Output', value='done'),
+        ], [edge('branch', 'true', 'inactive', 'gate')])
+        result = execute(g)
+        self.assertTrue(result['ok'])
+        self.assertEqual(
+            result['trace'],
+            [
+                {'node': 'branch', 'status': 'completed'},
+                {'node': 'output', 'status': 'completed'},
+                {'node': 'inactive', 'status': 'skipped'},
+            ],
+        )
+
     def test_timeout(self):
         result = execute(graph([node('loop','Python',code='while True:\n    pass')]),timeout=.2)
         self.assertFalse(result['ok'])

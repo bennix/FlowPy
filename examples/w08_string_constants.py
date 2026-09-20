@@ -1,5 +1,5 @@
 # FlowPy graph v1: eyJ2ZXJzaW9uIjoxLCJuYW1lIjoi5qCH5YeG5bqT77yac3RyaW5nIOS4juWPr+mHjeWkjemaj+acuuWtl+espuS4siIsIndlZWsiOjgsImRlc2NyaXB0aW9uIjoic3RyaW5nLmFzY2lpX2xldHRlcnMgLyBkaWdpdHPvvJvmlZnlrabnlKjpmo/mnLrmoIfor4bnrKbvvIzkuI3kvZzkuLrlr4bnoIHjgIIiLCJzdGRpbiI6IiIsIm5vZGVzIjpbeyJpZCI6ImxvZ2ljIiwidHlwZSI6IlB5dGhvbiIsInRpdGxlIjoiUHl0aG9uIiwieCI6MzAsInkiOjgwLCJjb25maWciOnsiY29kZSI6ImltcG9ydCBzdHJpbmdcbmltcG9ydCByYW5kb21cbnJuZyA9IHJhbmRvbS5SYW5kb20oMTIpXG5hbHBoYWJldCA9IHN0cmluZy5hc2NpaV9sZXR0ZXJzICsgc3RyaW5nLmRpZ2l0c1xudG9rZW4gPSAnJy5qb2luKHJuZy5jaG9pY2UoYWxwaGFiZXQpIGZvciBfIGluIHJhbmdlKDEyKSlcbnJlc3VsdCA9IHsnbGVuZ3RoJzogbGVuKHRva2VuKSwgJ3ZhbGlkJzogYWxsKGMgaW4gYWxwaGFiZXQgZm9yIGMgaW4gdG9rZW4pfSJ9fSx7ImlkIjoib3V0IiwidHlwZSI6Ik91dHB1dCIsInRpdGxlIjoiT3V0cHV0IiwieCI6MzgwLCJ5Ijo4MCwiY29uZmlnIjp7fX1dLCJlZGdlcyI6W3sic291cmNlIjoibG9naWMiLCJvdXQiOiJ2YWx1ZSIsInRhcmdldCI6Im91dCIsImluIjoidmFsdWUifV0sImNoZWNrcyI6eyJvdXQiOnsidmFsdWUiOnsibGVuZ3RoIjoxMiwidmFsaWQiOnRydWV9fX0sInZlcmlmaWVkIjp0cnVlfQ==
-# FlowPy source sha256: c0f93945956fbad4fa1db5a8f7f923998735a518f86c0121d0486b2160d2767f
+# FlowPy source sha256: 39ecf9c0fd631af6a9ecd7f4d61345ddf1a06d9199a5c3eb69937ccbe7a9b045
 import re
 import inspect
 import asyncio
@@ -41,14 +41,20 @@ def run_graph(trace=None, context=None):
         else:
             results['logic'] = None
         if trace is not None:
-            trace['logic'] = results['logic']
+            if isinstance(trace, list):
+                trace.append({'node': 'logic', 'status': 'skipped' if results['logic'] is None else 'completed'})
+            else:
+                trace['logic'] = results['logic']
         current_node = 'out'
         if results['logic'] is not None:
             results['out'] = node_out({'value': results['logic']['value']})
         else:
             results['out'] = None
         if trace is not None:
-            trace['out'] = results['out']
+            if isinstance(trace, list):
+                trace.append({'node': 'out', 'status': 'skipped' if results['out'] is None else 'completed'})
+            else:
+                trace['out'] = results['out']
     except Exception as exc:
         raise RuntimeError(f'节点 {current_node}: {exc}') from exc
     return results

@@ -1,5 +1,5 @@
 # FlowPy graph v1: eyJ2ZXJzaW9uIjoxLCJuYW1lIjoi5qCH5YeG5bqT77ya562J6aKd5pys5oGv5pyI5L6bIiwid2VlayI6OCwiZGVzY3JpcHRpb24iOiLlh73mlbDjgIFtYXRoLnBvdyDkuI7pm7bliKnnjofliIbmlK/vvJvlubTliKnnjofkvb/nlKjlsI/mlbDvvIzkvovlpoIgMC4wNDXjgIIiLCJzdGRpbiI6IiIsIm5vZGVzIjpbeyJpZCI6ImlucHV0IiwidHlwZSI6IkNvbnN0YW50IiwidGl0bGUiOiLovpPlhaXmlbDmja4iLCJ4IjozMCwieSI6ODAsImNvbmZpZyI6eyJ2YWx1ZSI6eyJwcmluY2lwYWwiOjEwMDAwMCwiYW5udWFsX3JhdGUiOjAuMDQ1LCJtb250aHMiOjM2MH19fSx7ImlkIjoibG9naWMiLCJ0eXBlIjoiUHl0aG9uIiwidGl0bGUiOiJQeXRob24g5aSE55CGIiwieCI6MzUwLCJ5Ijo4MCwiY29uZmlnIjp7ImNvZGUiOiJpbXBvcnQgbWF0aFxucHJpbmNpcGFsLCBhbm51YWxfcmF0ZSwgbW9udGhzID0gdmFsdWVbJ3ByaW5jaXBhbCddLCB2YWx1ZVsnYW5udWFsX3JhdGUnXSwgdmFsdWVbJ21vbnRocyddXG5pZiBwcmluY2lwYWwgPD0gMCBvciBhbm51YWxfcmF0ZSA8IDAgb3IgbW9udGhzIDw9IDAgb3IgaW50KG1vbnRocykgIT0gbW9udGhzOlxuICAgIHJhaXNlIFZhbHVlRXJyb3IoJ+i0t+asvuacrOmHkeOAgeWIqeeOh+aIluacn+aVsOaXoOaViCcpXG5yYXRlID0gYW5udWFsX3JhdGUgLyAxMlxucGF5bWVudCA9IHByaW5jaXBhbCAvIG1vbnRocyBpZiByYXRlID09IDAgZWxzZSBwcmluY2lwYWwgKiByYXRlICogbWF0aC5wb3coMSArIHJhdGUsIG1vbnRocykgLyAobWF0aC5wb3coMSArIHJhdGUsIG1vbnRocykgLSAxKVxucmVzdWx0ID0geydtb250aGx5X3BheW1lbnQnOiByb3VuZChwYXltZW50LCAyKSwgJ21vbnRocyc6IG1vbnRoc30ifX0seyJpZCI6Im91dCIsInR5cGUiOiJPdXRwdXQiLCJ0aXRsZSI6Iue7k+aenCIsIngiOjcwMCwieSI6ODAsImNvbmZpZyI6e319XSwiZWRnZXMiOlt7InNvdXJjZSI6ImlucHV0Iiwib3V0IjoidmFsdWUiLCJ0YXJnZXQiOiJsb2dpYyIsImluIjoidmFsdWUifSx7InNvdXJjZSI6ImxvZ2ljIiwib3V0IjoidmFsdWUiLCJ0YXJnZXQiOiJvdXQiLCJpbiI6InZhbHVlIn1dLCJjaGVja3MiOnsib3V0Ijp7InZhbHVlIjp7Im1vbnRobHlfcGF5bWVudCI6NTA2LjY5LCJtb250aHMiOjM2MH19fSwidmVyaWZpZWQiOnRydWV9
-# FlowPy source sha256: 5aa850bdf1fb6e3ae3a3826c8276e8c64184384b19e8ab13add37c45c0431fed
+# FlowPy source sha256: 5fff0842cbbeb3c1f689dfd4455175f8926f13df0d3a60f16ee1ed9535878b2e
 import re
 import inspect
 import asyncio
@@ -47,21 +47,30 @@ def run_graph(trace=None, context=None):
         else:
             results['input'] = None
         if trace is not None:
-            trace['input'] = results['input']
+            if isinstance(trace, list):
+                trace.append({'node': 'input', 'status': 'skipped' if results['input'] is None else 'completed'})
+            else:
+                trace['input'] = results['input']
         current_node = 'logic'
         if results['input'] is not None:
             results['logic'] = node_logic({'value': results['input']['value']})
         else:
             results['logic'] = None
         if trace is not None:
-            trace['logic'] = results['logic']
+            if isinstance(trace, list):
+                trace.append({'node': 'logic', 'status': 'skipped' if results['logic'] is None else 'completed'})
+            else:
+                trace['logic'] = results['logic']
         current_node = 'out'
         if results['logic'] is not None:
             results['out'] = node_out({'value': results['logic']['value']})
         else:
             results['out'] = None
         if trace is not None:
-            trace['out'] = results['out']
+            if isinstance(trace, list):
+                trace.append({'node': 'out', 'status': 'skipped' if results['out'] is None else 'completed'})
+            else:
+                trace['out'] = results['out']
     except Exception as exc:
         raise RuntimeError(f'节点 {current_node}: {exc}') from exc
     return results

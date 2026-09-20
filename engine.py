@@ -216,7 +216,7 @@ def source_body(graph, standalone=True):
         expr = ', '.join(f"{port!r}: results[{e['source']!r}][{e['out']!r}]" for port, e in ins.items() if port != 'gate')
         if by_id[nid]['type'] == 'Item':
             expr = '**(context or {})'
-        lines += [f"        if {' and '.join(conds) or 'True'}:", f'            results[{nid!r}] = node_{nid}({{{expr}}})', '        else:', f'            results[{nid!r}] = None', '        if trace is not None:', f'            trace[{nid!r}] = results[{nid!r}]']
+        lines += [f"        if {' and '.join(conds) or 'True'}:", f'            results[{nid!r}] = node_{nid}({{{expr}}})', '        else:', f'            results[{nid!r}] = None', '        if trace is not None:', '            if isinstance(trace, list):', f"                trace.append({{'node': {nid!r}, 'status': 'skipped' if results[{nid!r}] is None else 'completed'}})", '            else:', f'                trace[{nid!r}] = results[{nid!r}]']
     lines += ['    except Exception as exc:', "        raise RuntimeError(f'节点 {current_node}: {exc}') from exc", '    return results', '', '']
     if standalone:
         lines += ["if __name__ == '__main__':", '    from pprint import pprint', '    pprint(run_graph())', '']

@@ -1,5 +1,5 @@
 # FlowPy graph v1: eyJ2ZXJzaW9uIjoxLCJuYW1lIjoi54yc5pWw5a2X5ri45oiP77ya6Zq+5bqm5LiO5b6q546vIiwid2VlayI6NSwiZGVzY3JpcHRpb24iOiJlYXN5IC8gbm9ybWFsIC8gaGFyZO+8m+WbuuWumumaj+acuuenjeWtkOWPr+mHjeWkjea1i+ivle+8jGlucHV0KCkg6L6T5YWl54yc5rWL44CCIiwic3RkaW4iOiJub3JtYWxcbjEwXG4zMFxuMjFcbiIsIm5vZGVzIjpbeyJpZCI6ImdhbWUiLCJ0eXBlIjoiUHl0aG9uIiwidGl0bGUiOiLnjJzmlbDlrZfpgLvovpEiLCJ4IjozMCwieSI6ODAsImNvbmZpZyI6eyJjb2RlIjoiaW1wb3J0IHJhbmRvbVxubGV2ZWxzID0geydlYXN5JzogKDIwLCA2KSwgJ25vcm1hbCc6ICg1MCwgNSksICdoYXJkJzogKDEwMCwgMyl9XG5sZXZlbCA9IGlucHV0KCfpmr7luqYgZWFzeS9ub3JtYWwvaGFyZO+8micpLnN0cmlwKClcbmlmIGxldmVsIG5vdCBpbiBsZXZlbHM6XG4gICAgcmFpc2UgVmFsdWVFcnJvcign5LiN5pSv5oyB55qE6Zq+5bqmJylcbnVwcGVyLCBtYXhfYXR0ZW1wdHMgPSBsZXZlbHNbbGV2ZWxdXG50YXJnZXQgPSByYW5kb20uUmFuZG9tKDcpLnJhbmRpbnQoMSwgdXBwZXIpXG5ndWVzc2VzLCB3b24gPSBbXSwgRmFsc2VcbmZvciBhdHRlbXB0IGluIHJhbmdlKG1heF9hdHRlbXB0cyk6XG4gICAgZ3Vlc3MgPSBpbnQoaW5wdXQoZifnrKwge2F0dGVtcHQgKyAxfSDmrKHnjJzmtYvvvJonKSlcbiAgICBndWVzc2VzLmFwcGVuZChndWVzcylcbiAgICBpZiBndWVzcyA9PSB0YXJnZXQ6XG4gICAgICAgIHdvbiA9IFRydWVcbiAgICAgICAgcHJpbnQoJ+eMnOWvueS6hu+8gScpXG4gICAgICAgIGJyZWFrXG4gICAgcHJpbnQoJ+WkquWwjycgaWYgZ3Vlc3MgPCB0YXJnZXQgZWxzZSAn5aSq5aSnJylcbnJlc3VsdCA9IHsnZGlmZmljdWx0eSc6IGxldmVsLCAnd29uJzogd29uLCAnYXR0ZW1wdHMnOiBsZW4oZ3Vlc3NlcyksICd0YXJnZXQnOiB0YXJnZXR9In19LHsiaWQiOiJvdXQiLCJ0eXBlIjoiT3V0cHV0IiwidGl0bGUiOiJPdXRwdXQiLCJ4IjozOTAsInkiOjgwLCJjb25maWciOnt9fV0sImVkZ2VzIjpbeyJzb3VyY2UiOiJnYW1lIiwib3V0IjoidmFsdWUiLCJ0YXJnZXQiOiJvdXQiLCJpbiI6InZhbHVlIn1dLCJjaGVja3MiOnsib3V0Ijp7InZhbHVlIjp7ImRpZmZpY3VsdHkiOiJub3JtYWwiLCJ3b24iOnRydWUsImF0dGVtcHRzIjozLCJ0YXJnZXQiOjIxfX19LCJ2ZXJpZmllZCI6dHJ1ZX0=
-# FlowPy source sha256: cec4bcf75723999d97166fdd243d5985f8e94394e83f184f2f26bb9c100787a1
+# FlowPy source sha256: 027edfda91be549aba34e63b4988bbfbd3d6ec87ea0d95b383bcf02ba0e782ad
 import re
 import inspect
 import asyncio
@@ -52,14 +52,20 @@ def run_graph(trace=None, context=None):
         else:
             results['game'] = None
         if trace is not None:
-            trace['game'] = results['game']
+            if isinstance(trace, list):
+                trace.append({'node': 'game', 'status': 'skipped' if results['game'] is None else 'completed'})
+            else:
+                trace['game'] = results['game']
         current_node = 'out'
         if results['game'] is not None:
             results['out'] = node_out({'value': results['game']['value']})
         else:
             results['out'] = None
         if trace is not None:
-            trace['out'] = results['out']
+            if isinstance(trace, list):
+                trace.append({'node': 'out', 'status': 'skipped' if results['out'] is None else 'completed'})
+            else:
+                trace['out'] = results['out']
     except Exception as exc:
         raise RuntimeError(f'节点 {current_node}: {exc}') from exc
     return results

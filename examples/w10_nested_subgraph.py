@@ -1,5 +1,5 @@
 # FlowPy graph v1: eyJ2ZXJzaW9uIjoxLCJuYW1lIjoi5qih5Z2X5YyW6YeN5p6E77ya5Y+v6KeG5YyW5a2Q5Zu+Iiwid2VlayI6MTAsImRlc2NyaXB0aW9uIjoi5Li755S75biD5Y+q5L+d55WZ5YiX6KGo5LiOIE1hcO+8m+i/m+WFpSBNYXAg5a2Q5Zu+57yW6L6R5Y2V5p2h6K6w5b2V55qE5aSE55CG44CCIiwic3RkaW4iOiIiLCJub2RlcyI6W3siaWQiOiJyZWNvcmRzIiwidHlwZSI6IkNvbnN0YW50IiwidGl0bGUiOiJDb25zdGFudCIsIngiOjMwLCJ5Ijo4MCwiY29uZmlnIjp7InZhbHVlIjpbeyJuYW1lIjoiQWxpY2UiLCJzY29yZSI6ODV9LHsibmFtZSI6IkJvYiIsInNjb3JlIjo1OX1dfX0seyJpZCI6Im1hcCIsInR5cGUiOiJNYXAiLCJ0aXRsZSI6Ik1hcCIsIngiOjM1MCwieSI6ODAsImNvbmZpZyI6eyJib2R5Ijp7InZlcnNpb24iOjEsIm5hbWUiOiLpqozor4HljZXmnaHlrabnlJ/orrDlvZUiLCJub2RlcyI6W3siaWQiOiJpdGVtIiwidHlwZSI6Ikl0ZW0iLCJ0aXRsZSI6Ikl0ZW0iLCJ4IjozMCwieSI6ODAsImNvbmZpZyI6eyJ2YWx1ZSI6eyJuYW1lIjoiQWxpY2UiLCJzY29yZSI6ODV9fX0seyJpZCI6ImNoZWNrIiwidHlwZSI6IlB5dGhvbiIsInRpdGxlIjoiUHl0aG9uIiwieCI6MzQwLCJ5Ijo4MCwiY29uZmlnIjp7ImNvZGUiOiJpZiBub3QgaXNpbnN0YW5jZSh2YWx1ZSwgZGljdCk6XG4gICAgcmFpc2UgVHlwZUVycm9yKFwi6K6w5b2V5b+F6aG75pivIGRpY3RcIilcbnJlc3VsdCA9IHtcIm5hbWVcIjogdmFsdWVbXCJuYW1lXCJdLCBcInBhc3NlZFwiOiB2YWx1ZVtcInNjb3JlXCJdID49IDYwfSJ9fSx7ImlkIjoib3V0IiwidHlwZSI6Ik91dHB1dCIsInRpdGxlIjoiT3V0cHV0IiwieCI6NjgwLCJ5Ijo4MCwiY29uZmlnIjp7fX1dLCJlZGdlcyI6W3sic291cmNlIjoiaXRlbSIsIm91dCI6InZhbHVlIiwidGFyZ2V0IjoiY2hlY2siLCJpbiI6InZhbHVlIn0seyJzb3VyY2UiOiJjaGVjayIsIm91dCI6InZhbHVlIiwidGFyZ2V0Ijoib3V0IiwiaW4iOiJ2YWx1ZSJ9XX19fSx7ImlkIjoib3V0IiwidHlwZSI6Ik91dHB1dCIsInRpdGxlIjoiT3V0cHV0IiwieCI6NzAwLCJ5Ijo4MCwiY29uZmlnIjp7fX1dLCJlZGdlcyI6W3sic291cmNlIjoicmVjb3JkcyIsIm91dCI6InZhbHVlIiwidGFyZ2V0IjoibWFwIiwiaW4iOiJpdGVtcyJ9LHsic291cmNlIjoibWFwIiwib3V0IjoiaXRlbXMiLCJ0YXJnZXQiOiJvdXQiLCJpbiI6InZhbHVlIn1dLCJjaGVja3MiOnsib3V0Ijp7InZhbHVlIjpbeyJuYW1lIjoiQWxpY2UiLCJwYXNzZWQiOnRydWV9LHsibmFtZSI6IkJvYiIsInBhc3NlZCI6ZmFsc2V9XX19LCJ2ZXJpZmllZCI6dHJ1ZX0=
-# FlowPy source sha256: 5fa8478a51456e1ea9e4c2aba4dea5f4e479a5bee333ba714c9021e80fc1106b
+# FlowPy source sha256: 220aa14e951ddaf52cd5e1b5db40a82fd544b8e4b5d79bf7434ae3d08730b41c
 import re
 import inspect
 import asyncio
@@ -59,21 +59,30 @@ def node_map(inputs):
             else:
                 results['item'] = None
             if trace is not None:
-                trace['item'] = results['item']
+                if isinstance(trace, list):
+                    trace.append({'node': 'item', 'status': 'skipped' if results['item'] is None else 'completed'})
+                else:
+                    trace['item'] = results['item']
             current_node = 'check'
             if results['item'] is not None:
                 results['check'] = node_check({'value': results['item']['value']})
             else:
                 results['check'] = None
             if trace is not None:
-                trace['check'] = results['check']
+                if isinstance(trace, list):
+                    trace.append({'node': 'check', 'status': 'skipped' if results['check'] is None else 'completed'})
+                else:
+                    trace['check'] = results['check']
             current_node = 'out'
             if results['check'] is not None:
                 results['out'] = node_out({'value': results['check']['value']})
             else:
                 results['out'] = None
             if trace is not None:
-                trace['out'] = results['out']
+                if isinstance(trace, list):
+                    trace.append({'node': 'out', 'status': 'skipped' if results['out'] is None else 'completed'})
+                else:
+                    trace['out'] = results['out']
         except Exception as exc:
             raise RuntimeError(f'节点 {current_node}: {exc}') from exc
         return results
@@ -113,21 +122,30 @@ def run_graph(trace=None, context=None):
         else:
             results['records'] = None
         if trace is not None:
-            trace['records'] = results['records']
+            if isinstance(trace, list):
+                trace.append({'node': 'records', 'status': 'skipped' if results['records'] is None else 'completed'})
+            else:
+                trace['records'] = results['records']
         current_node = 'map'
         if results['records'] is not None:
             results['map'] = node_map({'items': results['records']['value']})
         else:
             results['map'] = None
         if trace is not None:
-            trace['map'] = results['map']
+            if isinstance(trace, list):
+                trace.append({'node': 'map', 'status': 'skipped' if results['map'] is None else 'completed'})
+            else:
+                trace['map'] = results['map']
         current_node = 'out'
         if results['map'] is not None:
             results['out'] = node_out({'value': results['map']['items']})
         else:
             results['out'] = None
         if trace is not None:
-            trace['out'] = results['out']
+            if isinstance(trace, list):
+                trace.append({'node': 'out', 'status': 'skipped' if results['out'] is None else 'completed'})
+            else:
+                trace['out'] = results['out']
     except Exception as exc:
         raise RuntimeError(f'节点 {current_node}: {exc}') from exc
     return results

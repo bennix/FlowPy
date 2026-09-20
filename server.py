@@ -13,6 +13,7 @@ from urllib.parse import urlparse
 from engine import GraphError, SPECS, export_python, import_python, validate
 
 ROOT = Path(__file__).resolve().parent
+PACKAGE_ALLOWLIST = {'pandas', 'requests', 'numpy', 'openpyxl', 'pyyaml'}
 
 
 def execute(graph, timeout=10):
@@ -31,6 +32,27 @@ def execute(graph, timeout=10):
         if result_path.stat().st_size > 5_000_000:
             return {'ok': False, 'error': '输出超过 5 MB，请缩小结果。', 'results': {}, 'logs': ''}
         return json.loads(result_path.read_text())
+
+
+def package_catalog():
+    """Small, explicit extension catalog; never pass arbitrary shell text to pip."""
+    installed = set()
+    try:
+        result = subprocess.run([sys.executable, '-m', 'pip', 'list', '--format=json'], capture_output=True, text=True, timeout=8, check=True)
+        installed = {item['name'].lower() for item in json.loads(result.stdout)}
+    except (subprocess.SubprocessError, json.JSONDecodeError, KeyError):
+        pass
+    return [{'name': name, 'installed': name in installed} for name in sorted(PACKAGE_ALLOWLIST)]
+
+
+def install_package(name):
+    name = str(name).lower()
+    if name not in PACKAGE_ALLOWLIST:
+        raise GraphError('只能安装扩展目录中的包：' + '、'.join(sorted(PACKAGE_ALLOWLIST)))
+    result = subprocess.run([sys.executable, '-m', 'pip', 'install', name], capture_output=True, text=True, timeout=120)
+    if result.returncode:
+        raise GraphError((result.stderr or result.stdout or '安装失败')[-1200:])
+    return {'ok': True, 'name': name, 'message': name + ' 已安装，可在 Python 或 ImportModule 节点中使用。'}
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -70,6 +92,8 @@ class Handler(SimpleHTTPRequestHandler):
             if path == '/api/validate':
                 validate(data['graph'])
                 return self.json_response({'ok': True})
+            if path == '/api/packages/install':
+                return self.json_response(install_package(data['name']))
             return self.json_response({'error': '接口不存在。'}, 404)
         except (GraphError, ValueError, TypeError, KeyError, AttributeError) as exc:
             return self.json_response({'error': str(exc)}, 400)
@@ -80,6 +104,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self.json_response(examples)
         if self.path == '/api/specs':
             return self.json_response(SPECS)
+        if self.path == '/api/packages':
+            return self.json_response(package_catalog())
         super().do_GET()
 
 

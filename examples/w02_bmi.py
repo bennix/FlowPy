@@ -1,5 +1,5 @@
 # FlowPy graph v1: eyJ2ZXJzaW9uIjoxLCJuYW1lIjoiQk1JIOiuoeeul+WZqCIsIndlZWsiOjIsImRlc2NyaXB0aW9uIjoi5Y+Y6YeP44CB5pWw5YC86L+Q566X44CB5a2X5YW46L6T5YWl5LiO6L6555WM5qCh6aqM77yb5L2T6YeNIGtnIC8g6Lqr6auYIG3jgIIiLCJzdGRpbiI6IiIsIm5vZGVzIjpbeyJpZCI6ImlucHV0IiwidHlwZSI6IkNvbnN0YW50IiwidGl0bGUiOiLovpPlhaXmlbDmja4iLCJ4IjozMCwieSI6ODAsImNvbmZpZyI6eyJ2YWx1ZSI6eyJ3ZWlnaHQiOjcwLCJoZWlnaHQiOjEuNzV9fX0seyJpZCI6ImxvZ2ljIiwidHlwZSI6IlB5dGhvbiIsInRpdGxlIjoiUHl0aG9uIOWkhOeQhiIsIngiOjM1MCwieSI6ODAsImNvbmZpZyI6eyJjb2RlIjoid2VpZ2h0LCBoZWlnaHQgPSBmbG9hdCh2YWx1ZVsnd2VpZ2h0J10pLCBmbG9hdCh2YWx1ZVsnaGVpZ2h0J10pXG5pZiB3ZWlnaHQgPD0gMCBvciBoZWlnaHQgPD0gMDpcbiAgICByYWlzZSBWYWx1ZUVycm9yKCfkvZPph43lkozouqvpq5jlv4XpobvlpKfkuo4gMCcpXG5ibWkgPSB3ZWlnaHQgLyBoZWlnaHQgKiogMlxuY2F0ZWdvcnkgPSAn5YGP55imJyBpZiBibWkgPCAxOC41IGVsc2UgJ+ato+W4uCcgaWYgYm1pIDwgMjQgZWxzZSAn6LaF6YeNJyBpZiBibWkgPCAyOCBlbHNlICfogqXog5YnXG5yZXN1bHQgPSB7J2JtaSc6IHJvdW5kKGJtaSwgMiksICdjYXRlZ29yeSc6IGNhdGVnb3J5fSJ9fSx7ImlkIjoib3V0IiwidHlwZSI6Ik91dHB1dCIsInRpdGxlIjoi57uT5p6cIiwieCI6NzAwLCJ5Ijo4MCwiY29uZmlnIjp7fX1dLCJlZGdlcyI6W3sic291cmNlIjoiaW5wdXQiLCJvdXQiOiJ2YWx1ZSIsInRhcmdldCI6ImxvZ2ljIiwiaW4iOiJ2YWx1ZSJ9LHsic291cmNlIjoibG9naWMiLCJvdXQiOiJ2YWx1ZSIsInRhcmdldCI6Im91dCIsImluIjoidmFsdWUifV0sImNoZWNrcyI6eyJvdXQiOnsidmFsdWUiOnsiYm1pIjoyMi44NiwiY2F0ZWdvcnkiOiLmraPluLgifX19LCJ2ZXJpZmllZCI6dHJ1ZX0=
-# FlowPy source sha256: 54a791fe85bdb4ffb5056f3ec1a0ba964d5e64ceffad78f8a6737260d885c697
+# FlowPy source sha256: 8e9a6100e103563a978e3bf53ec7ce0a3d6c7432feff36034e0e82934d050c34
 import re
 import inspect
 import asyncio
@@ -46,21 +46,30 @@ def run_graph(trace=None, context=None):
         else:
             results['input'] = None
         if trace is not None:
-            trace['input'] = results['input']
+            if isinstance(trace, list):
+                trace.append({'node': 'input', 'status': 'skipped' if results['input'] is None else 'completed'})
+            else:
+                trace['input'] = results['input']
         current_node = 'logic'
         if results['input'] is not None:
             results['logic'] = node_logic({'value': results['input']['value']})
         else:
             results['logic'] = None
         if trace is not None:
-            trace['logic'] = results['logic']
+            if isinstance(trace, list):
+                trace.append({'node': 'logic', 'status': 'skipped' if results['logic'] is None else 'completed'})
+            else:
+                trace['logic'] = results['logic']
         current_node = 'out'
         if results['logic'] is not None:
             results['out'] = node_out({'value': results['logic']['value']})
         else:
             results['out'] = None
         if trace is not None:
-            trace['out'] = results['out']
+            if isinstance(trace, list):
+                trace.append({'node': 'out', 'status': 'skipped' if results['out'] is None else 'completed'})
+            else:
+                trace['out'] = results['out']
     except Exception as exc:
         raise RuntimeError(f'节点 {current_node}: {exc}') from exc
     return results

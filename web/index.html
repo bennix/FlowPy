@@ -1,20 +1,251 @@
 <!doctype html>
 <html lang="zh-CN">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>FlowPy — Visual Python Studio</title><link rel="stylesheet" href="/style.css"></head>
-<body>
-<header class="topbar"><a class="brand" href="/" aria-label="FlowPy 首页"><span class="brand-icon">⌘</span>Flow<span>Py</span><sup>STUDIO</sup></a><div class="project-name"><span class="folder-icon">▱</span><input id="projectName" value="订单解析工作流" aria-label="项目名称"><span class="saved" id="saveStatus">已保存到本机</span></div><div class="header-actions"><button id="importButton" class="quiet">↥ 导入</button><button id="exportButton" class="quiet">↧ 导出 Python</button><button id="runButton" class="primary"><span>▶</span> 运行工作流 <kbd>⌘ ↵</kbd></button></div></header>
-<div class="workspace">
-<aside class="library"><div class="library-heading"><span>节点库</span><span class="small-label">LIBRARY</span></div><div class="search"><span>⌕</span><input id="search" placeholder="搜索节点…" aria-label="搜索节点"><kbd>/</kbd></div><div class="library-content" id="library"></div><div class="library-footer"><span class="green-dot"></span><div>Python 本地运行时<small>Python 标准库 · pandas 可选</small></div><span class="runtime-tag">3.9+</span></div></aside>
-<main class="main"><div class="workspace-toolbar"><div class="tabs"><button class="tab active" id="canvasTab">◈ <span>节点画布</span></button><button class="tab" id="codeTab">⌘ <span>Python 代码</span></button></div><div class="tools"><button id="backScope" hidden title="返回上层工作流">← 返回主图</button><button id="stdinButton" title="为 input() 配置逐行测试输入">⌨ 输入</button><button id="examplesButton" title="选择示例">示例 <span>⌄</span></button><button id="undoButton" title="撤销 ⌘Z">↶</button><button id="redoButton" title="重做 ⌘⇧Z">↷</button><span class="divider"></span><button id="layoutButton" title="按依赖自动排列">▦ 自动排列</button><button id="clearButton" title="新建空白工作流">＋ 新建</button></div></div>
-<section id="canvasView" class="canvas-view"><div class="canvas-label"><span class="eyebrow">WORKFLOW / 001</span><h1 id="canvasTitle">订单解析工作流</h1><p>连接数据、函数与控制，让 Python 逻辑清晰可见。</p></div><div id="canvas" tabindex="0" aria-label="节点画布，拖动背景平移，滚轮缩放"><div id="world"><svg id="connections" width="6000" height="6000"><defs><filter id="wireGlow"><feGaussianBlur stdDeviation="2"/></filter></defs><g id="wires"></g></svg><div id="nodes"></div></div></div><div class="canvas-hint"><span>●</span> 点击输出端口，再点击输入端口连接 <span class="hint-dot">·</span> Delete 删除选中项</div><div class="canvas-controls"><button id="zoomOut" title="缩小">−</button><span id="zoomLabel">100%</span><button id="zoomIn" title="放大">＋</button><span class="divider"></span><button id="fitButton" title="适应画布">⛶</button></div><div class="canvas-summary"><span id="nodeCount">6 nodes</span><span class="green-dot"></span><span>DAG · 无环数据流</span></div></section>
-<section id="codeView" hidden><div class="code-heading"><div><strong>可读、可运行的 Python</strong><p>图 → Python → 图，节点信息随文件保留。</p></div><button id="copyCode" class="quiet">复制代码</button></div><pre id="codePreview"></pre></section>
-<section class="console"><div class="console-toolbar"><div class="console-tabs"><button class="active" data-console="results">运行结果 <span id="resultCount">0</span></button><button data-console="logs">终端日志</button></div><div class="execution-status" id="executionStatus"><span class="status-dot"></span> 等待运行</div><button id="toggleConsole" title="收起或展开结果">⌄</button></div><div class="console-body" id="consoleBody"><div class="console-empty"><span>▷</span><div>每一步，都看得见。<small>运行工作流，在这里查看节点输出与执行日志。</small></div><kbd>⌘ Enter</kbd></div></div></section>
-<footer class="statusbar"><span><span class="green-dot"></span> 本地工作空间</span><span>数据变换 / 控制路由 / Python 逻辑</span><span id="bottomStatus">准备就绪</span></footer></main>
-<aside class="inspector"><div class="inspector-heading"><span>节点检查器</span><span>⚙</span></div><div id="inspector"></div><div class="principle"><span>◇</span><div>让画布保持简单<p>数据流负责变换，控制流负责路由。复杂逻辑交给一个 Python 节点。</p></div></div></aside>
-</div>
-<div id="toast" role="status"></div>
-<dialog id="importDialog"><form method="dialog"><div class="dialog-heading"><h2>导入工作流</h2><button aria-label="关闭">×</button></div></form><p>导入 FlowPy JSON 或 Python 文件。普通 Python 将保留为一个完整逻辑节点。</p><label class="file-drop">↥ 选择 .py / .json 文件<input id="importFile" type="file" accept=".py,.json"></label><textarea id="importText" spellcheck="false" placeholder="或在这里粘贴 Python / 工作流 JSON…"></textarea><div class="dialog-footer"><span>Python 节点使用本机权限运行，请只运行可信代码。</span><button class="primary" id="doImport">导入画布 →</button></div></dialog>
-<dialog id="examplesDialog"><form method="dialog"><div class="dialog-heading"><h2>Python 示例与课程实验</h2><button aria-label="关闭">×</button></div></form><p>选择示例会替换当前画布，可以通过撤销恢复。</p><div id="examplesList"></div></dialog>
-<dialog id="stdinDialog"><form method="dialog"><div class="dialog-heading"><h2>Python 标准输入</h2><button aria-label="关闭">×</button></div></form><p>每一行对应一次 input() 调用。输入不足时显示 EOFError，便于重现与修复问题。导出的 Python 可在终端中交互输入。</p><textarea id="stdinText" spellcheck="false" placeholder="70&#10;1.75"></textarea><div class="dialog-footer"><span>测试输入会随工作流保存。</span><button id="saveStdin" class="primary">保存测试输入</button></div></dialog>
-<script src="/app.js"></script>
-</body></html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FlowPy — Visual Python Studio</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="FlowPy 首页"
+        ><span class="brand-icon">⌘</span>Flow<span>Py</span
+        ><sup>STUDIO</sup></a
+      >
+      <div class="project-name">
+        <span class="folder-icon">▱</span
+        ><input
+          id="projectName"
+          value="订单解析工作流"
+          aria-label="项目名称"
+        /><span class="saved" id="saveStatus">已保存到本机</span>
+      </div>
+      <div class="header-actions">
+        <button id="importButton" class="quiet">↥ 导入</button
+        ><button id="exportButton" class="quiet">↧ 导出 Python</button
+        ><button id="runButton" class="primary">
+          <span>▶</span> 运行工作流 <kbd>⌘ ↵</kbd>
+        </button>
+      </div>
+    </header>
+    <div class="workspace">
+      <aside class="library">
+        <div class="library-heading">
+          <span>节点库</span><span class="small-label">LIBRARY</span>
+        </div>
+        <div class="search">
+          <span>⌕</span
+          ><input
+            id="search"
+            placeholder="搜索节点…"
+            aria-label="搜索节点"
+          /><kbd>/</kbd>
+        </div>
+        <div class="library-content" id="library"></div>
+        <button id="packagesButton" class="package-button">
+          ＋ 扩展库 <small>pandas · requests</small>
+        </button>
+        <div class="library-footer">
+          <span class="green-dot"></span>
+          <div>Python 本地运行时<small>Python 标准库 · pandas 可选</small></div>
+          <span class="runtime-tag">3.9+</span>
+        </div>
+      </aside>
+      <main class="main">
+        <div class="workspace-toolbar">
+          <div class="tabs">
+            <button class="tab active" id="canvasTab">
+              ◈ <span>节点画布</span></button
+            ><button class="tab" id="codeTab">
+              ⌘ <span>Python 代码</span>
+            </button>
+          </div>
+          <div class="tools">
+            <button id="backScope" hidden title="返回上层工作流">
+              ← 返回主图</button
+            ><button id="stdinButton" title="为 input() 配置逐行测试输入">
+              ⌨ 输入</button
+            ><button id="examplesButton" title="选择示例">
+              示例 <span>⌄</span></button
+            ><button id="undoButton" title="撤销 ⌘Z">↶</button
+            ><button id="redoButton" title="重做 ⌘⇧Z">↷</button
+            ><span class="divider"></span
+            ><button id="layoutButton" title="按依赖自动排列">▦ 自动排列</button
+            ><button id="clearButton" title="新建空白工作流">＋ 新建</button>
+          </div>
+        </div>
+        <section id="canvasView" class="canvas-view">
+          <div class="canvas-label">
+            <span class="eyebrow">WORKFLOW / 001</span>
+            <h1 id="canvasTitle">订单解析工作流</h1>
+            <p>连接数据、函数与控制，让 Python 逻辑清晰可见。</p>
+          </div>
+          <div
+            id="canvas"
+            tabindex="0"
+            aria-label="节点画布，拖动背景平移，滚轮缩放"
+          >
+            <div id="world">
+              <svg id="connections" width="6000" height="6000">
+                <defs>
+                  <filter id="wireGlow">
+                    <feGaussianBlur stdDeviation="2" />
+                  </filter>
+                </defs>
+                <g id="wires"></g>
+              </svg>
+              <div id="nodes"></div>
+            </div>
+          </div>
+          <div class="canvas-hint">
+            <span>●</span> 点击输出端口，再点击输入端口连接
+            <span class="hint-dot">·</span> Delete 删除选中项
+          </div>
+          <div class="canvas-controls">
+            <button id="zoomOut" title="缩小">−</button
+            ><span id="zoomLabel">100%</span
+            ><button id="zoomIn" title="放大">＋</button
+            ><span class="divider"></span
+            ><button id="fitButton" title="适应画布">⛶</button>
+          </div>
+          <div class="canvas-summary">
+            <span id="nodeCount">6 nodes</span><span class="green-dot"></span
+            ><span>DAG · 无环数据流</span>
+          </div>
+        </section>
+        <section id="codeView" hidden>
+          <div class="code-heading">
+            <div>
+              <strong>可读、可运行的 Python</strong>
+              <p>图 → Python → 图，节点信息随文件保留。</p>
+            </div>
+            <button id="copyCode" class="quiet">复制代码</button>
+          </div>
+          <pre id="codePreview"></pre>
+        </section>
+        <section class="console">
+          <div class="console-toolbar">
+            <div class="console-tabs">
+              <button class="active" data-console="results">
+                运行结果 <span id="resultCount">0</span></button
+              ><button data-console="logs">终端日志</button>
+            </div>
+            <div class="execution-status" id="executionStatus">
+              <span class="status-dot"></span> 等待运行
+            </div>
+            <button id="toggleConsole" title="收起或展开结果">⌄</button>
+          </div>
+          <div class="console-body" id="consoleBody">
+            <div class="console-empty">
+              <span>▷</span>
+              <div>
+                每一步，都看得见。<small
+                  >运行工作流，在这里查看节点输出与执行日志。</small
+                >
+              </div>
+              <kbd>⌘ Enter</kbd>
+            </div>
+          </div>
+        </section>
+        <footer class="statusbar">
+          <span><span class="green-dot"></span> 本地工作空间</span
+          ><span>数据变换 / 控制路由 / Python 逻辑</span
+          ><span id="bottomStatus">准备就绪</span>
+        </footer>
+      </main>
+      <aside class="inspector">
+        <div class="inspector-heading">
+          <span>节点检查器</span><span>⚙</span>
+        </div>
+        <div id="inspector"></div>
+        <div class="principle">
+          <span>◇</span>
+          <div>
+            让画布保持简单
+            <p>
+              数据流负责变换，控制流负责路由。复杂逻辑交给一个 Python 节点。
+            </p>
+          </div>
+        </div>
+      </aside>
+    </div>
+    <div id="toast" role="status"></div>
+    <dialog id="importDialog">
+      <form method="dialog">
+        <div class="dialog-heading">
+          <h2>导入工作流</h2>
+          <button aria-label="关闭">×</button>
+        </div>
+      </form>
+      <p>
+        导入 FlowPy JSON 或 Python 文件。普通 Python 将保留为一个完整逻辑节点。
+      </p>
+      <label class="file-drop"
+        >↥ 选择 .py / .json 文件<input
+          id="importFile"
+          type="file"
+          accept=".py,.json" /></label
+      ><textarea
+        id="importText"
+        spellcheck="false"
+        placeholder="或在这里粘贴 Python / 工作流 JSON…"
+      ></textarea>
+      <div class="dialog-footer">
+        <span>Python 节点使用本机权限运行，请只运行可信代码。</span
+        ><button class="primary" id="doImport">导入画布 →</button>
+      </div>
+    </dialog>
+    <dialog id="examplesDialog">
+      <form method="dialog">
+        <div class="dialog-heading">
+          <h2>Python 示例与课程实验</h2>
+          <button aria-label="关闭">×</button>
+        </div>
+      </form>
+      <p>选择示例会替换当前画布，可以通过撤销恢复。</p>
+      <div id="examplesList"></div>
+    </dialog>
+    <dialog id="stdinDialog">
+      <form method="dialog">
+        <div class="dialog-heading">
+          <h2>Python 标准输入</h2>
+          <button aria-label="关闭">×</button>
+        </div>
+      </form>
+      <p>
+        每一行对应一次 input() 调用。输入不足时显示
+        EOFError，便于重现与修复问题。导出的 Python 可在终端中交互输入。
+      </p>
+      <textarea
+        id="stdinText"
+        spellcheck="false"
+        placeholder="70&#10;1.75"
+      ></textarea>
+      <div class="dialog-footer">
+        <span>测试输入会随工作流保存。</span
+        ><button id="saveStdin" class="primary">保存测试输入</button>
+      </div>
+    </dialog>
+    <dialog id="packagesDialog">
+      <form method="dialog">
+        <div class="dialog-heading">
+          <h2>Python 扩展库</h2>
+          <button aria-label="关闭">×</button>
+        </div>
+      </form>
+      <p>
+        扩展安装到当前 FlowPy Python 环境。安装完成后可在 Python 节点中
+        <code>import</code>，或通过 ImportModule
+        节点引用。仅提供常用包目录，安装动作始终明确可见。
+      </p>
+      <div id="packagesList" class="packages-list"></div>
+      <div class="dialog-footer">
+        <span
+          >自定义节点可通过 Module 节点封装并保存为示例；复杂业务逻辑保持在
+          Python 节点中。</span
+        >
+      </div>
+    </dialog>
+    <script src="/app.js"></script>
+  </body>
+</html>
