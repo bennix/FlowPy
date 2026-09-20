@@ -4,7 +4,9 @@ const video = document.querySelector('#lessonVideo');
 let lessons = [];
 let category = 'all';
 let selected = '001_starter';
-const group = slug => {
+const group = item => {
+  if (item.group === 'features') return 'features';
+  const slug = item.slug;
   const week = Number(slug.slice(1, 3));
   if (!slug.startsWith('w')) return 'intro';
   return week <= 5 ? 'basics' : week <= 8 ? 'data' : 'advanced';
@@ -13,7 +15,7 @@ const label = slug => slug.startsWith('w') ? `WEEK ${Number(slug.slice(1, 3))}` 
 const time = duration => `${Math.floor(duration / 60).toString().padStart(2, '0')}:${Math.floor(duration % 60).toString().padStart(2, '0')}`;
 function render() {
   const query = document.querySelector('#lessonSearch').value.trim().toLowerCase();
-  const visible = lessons.filter(item => (category === 'all' || group(item.slug) === category) && `${item.name} ${item.slug} ${label(item.slug)}`.toLowerCase().includes(query));
+  const visible = lessons.filter(item => (category === 'all' || group(item) === category) && `${item.name} ${item.slug} ${label(item.slug)}`.toLowerCase().includes(query));
   count.textContent = `${visible.length} 个实例 / 选择一节，跟着搭建`;
   grid.replaceChildren();
   for (const item of visible) {

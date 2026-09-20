@@ -45,8 +45,8 @@ def overlay(plan,index,path):
     im.save(path)
 
 
-def render(slug):
-    plans=json.loads((VIDEOS/'plans.json').read_text());plan=next(p for p in plans if p['slug']==slug)
+def render(slug, plans_path=VIDEOS/'plans.json'):
+    plans=json.loads(Path(plans_path).read_text());plan=next(p for p in plans if p['slug']==slug)
     markers=json.loads((VIDEOS/'raw'/(slug+'.steps.json')).read_text())
     raw=VIDEOS/'raw'/markers.get('raw_file',slug+'.mp4')
     meta=json.loads((VIDEOS/'raw'/markers.get('meta_file',slug+'.meta.json')).read_text())
@@ -90,5 +90,5 @@ def render(slug):
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser();parser.add_argument('slugs',nargs='+');args=parser.parse_args()
-    for slug in args.slugs:render(slug)
+    parser=argparse.ArgumentParser();parser.add_argument('--plans',default=str(VIDEOS/'plans.json'));parser.add_argument('slugs',nargs='+');args=parser.parse_args()
+    for slug in args.slugs:render(slug, args.plans)
